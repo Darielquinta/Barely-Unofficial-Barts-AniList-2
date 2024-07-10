@@ -1,0 +1,123 @@
+<style>
+    hr.solid {
+        border-top: 3px solid #bbb;
+    }
+</style>
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script>
+var query = `
+query ($id: Int, $page: Int, $perPage: Int, $search: String) { # Define which variables will be used in the query (id)
+  Page (page: $page, perPage: $perPage) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+   media (id: $id, search: $search) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+    id
+    title {
+      romaji
+      english
+      native
+      }
+    }  
+  }
+}
+`;
+
+
+// Define our query variables and values that will be used in the query request
+var variables = {
+    search: localStorage.getItem("searchQuery"),
+    page: 1,
+    perPage: 3
+};
+
+console.log(localStorage.getItem("searchQuery"));
+
+// Define the config we'll need for our Api request
+var url = 'https://graphql.anilist.co',
+    options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: variables
+        })
+    };
+
+// Make the HTTP Api request
+fetch(url, options).then(handleResponse)
+                   .then(handleData)
+                   .catch(handleError);
+
+function handleResponse(response) {
+    return response.json().then(function (json) {
+        return response.ok ? json : Promise.reject(json);
+    });
+}
+
+function handleData(data) {
+    console.log(data);
+
+   // document.write(`<a href="search.html"> <button type="button"> test </button></a>`);
+    // var media = data.data.Page.media[0];
+    // var romajiTitle = media.title.romaji;
+    // var englishTitle = media.title.english;
+    // var nativeTitle = media.title.native;
+    // var reviewSummary = data.data.Media.reviews.nodes.summary;
+    
+    var searchResult = data.data.Page.media.map(media => `
+        <h2> <a href="javascript:void(0);" class="anime-title"> ${media.title.romaji} </a> </h2> 
+        <b> Alternate Names: <br> </b> 
+        ${media.title.english} <br> 
+        ${media.title.native} 
+        `).join('');
+        
+
+
+    document.write(`<center> <h1> Search Results </h1> </center>`);
+    document.write(` ${searchResult}`);
+    
+    document.querySelectorAll('.anime-title').forEach(item => {
+      item.addEventListener('click', event => {
+        var animeId = event.target.getAttribute('data-id');
+        window.location.href = `result.html?id = ${animeId}`;
+      });
+    });
+    // document.write(`Romaji Title: ${romajiTitle} <br>`);
+    // document.write(`English Title: ${englishTitle} <br>`);
+    // document.write(`Native Title: ${nativeTitle} <br>`);
+/*
+    document.write(" <h3> Tags </h3>");
+    var tags = data.data.Media.tags.map(tags => tags.name).join('<br> - ');
+    document.write(`- ${tags} <br><br>`);
+
+    document.write(" <h3> Reviews </h3>");
+    var review = data.data.Media.reviews.nodes.map(review => `
+        <p> User: <a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a> <p>
+        <p> Score: <b>${review.score}</b> <p> 
+        <p> Summary: ${review.summary} </p> <br>
+        <div> Review: ${marked.parse(review.body)} </div>
+    `).join('<br><hr class="solid"> <br>');
+    document.write(` ${review} <br> `); */
+
+} 
+
+function handleError(error) {
+    alert('Error, check console');
+    console.error(error);
+}
+
+</script>
+</body>
+</html>

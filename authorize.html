@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        hr.solid {
+            border-top: 3px solid #bbb;
+        }
+    
+        .disabled {
+            background-color: rgb(153, 0, 0);
+            cursor: not-allowed;
+        }
+		
+		.padding {
+			padding-left: 10%;
+			padding-right: 10%;
+		}
+		
+		table {
+			border-collapse: collapse;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+		}
+    </style>
+</head>
+<body >
+
+    <div class="loading">
+        <center> <h1> Loading, please wait... </h1> </center>
+    
+    </div>
+<script>
+
+var query = `
+query { # Define which variables will be used in the query (id)
+        Viewer {
+            name
+            about
+            avatar {
+                medium
+                }
+            bannerImage
+            favourites {
+                anime {
+                    nodes {
+                        id
+                        title {
+                            english
+                        }
+                    }
+                }
+            }
+
+        }
+}
+`;
+
+
+// Define our query variables and values that will be used in the query request
+var variables = {
+};
+
+console.log(localStorage.getItem("searchQuery"));
+
+function getAccessToken() {
+    var hash = window.location.hash.substring(1);
+    var params = new URLSearchParams(hash);
+    return params.get('access_token');
+}
+
+var accessToken = getAccessToken();
+
+function fetchData() {
+    // Define the config we'll need for our Api request
+    var options = {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: variables
+        })
+    };
+
+    // Make the HTTP Api request
+    fetch('https://graphql.anilist.co', options).then(handleResponse)
+                        .then(handleData)
+                        .catch(handleError);
+}
+
+
+fetchData();
+
+function handleResponse(response) {
+    return response.json().then(function (json) {
+        return response.ok ? json : Promise.reject(json);
+    });
+}
+
+
+function handleData(data) {
+    
+    var favoritesTitles = data.data.Viewer.favourites.anime.nodes.map(anime => `
+    ${anime.title.english}
+    `).join('');
+
+    console.log(favoritesTitles);
+
+
+    document.body.innerHTML = `
+              <table class="padding" bgcolor="C0C0C0" style="width: 100%">
+            <tr>
+                <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
+                <td style="width: 100%; padding: 0;"> <center><h1 style="margin: 0;"> AniList 2 </h1></center>
+            </tr>
+        </table>
+        <img src=${data.data.Viewer.bannerImage} width=100%>
+        <center> <h2> Authorized! Welcome back ${data.data.Viewer.name}! </h2> </center> <br>
+        <p> About me: ${data.data.Viewer.about} </p>
+        <br> <br>`;
+
+
+    console.log(getAccessToken());
+} 
+
+function handleError(error) {
+    alert('Error, check console lol');
+    console.error(error);
+}
+
+</script>
+
+
+
+
+</body>
+</html>

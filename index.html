@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+    hr.solid {
+        border-top: 3px solid #bbb;
+    }
+
+    html, body, .container, script {
+        height: 95.5%;
+        
+    }
+
+    .guestbook {
+        height: 10%
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    input[type=submit] {
+        background-color: #3CBC8D;
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 10px;
+        font-size: large;
+    }
+
+    input[type=text] {
+        background-color: gray;
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 10px;
+        font-size: large;
+    }
+
+    ::placeholder {
+        color: rgb(189, 189, 189);
+    }
+</style>
+</head>
+
+<body>
+
+
+<div class="container"><span> <center><h1>Barely Unofficial Bart's AniList 2 </h1> <h3> Search </h3> 
+<form id="form" onsubmit="return false;">
+<input  type="text" id="anime" name="anime" size="30" autofocus style="color:white;" placeholder="Type something like: Kemono Friends"/><br> <br>
+  <input type="submit" onclick="searchAnime();" />
+</form> </center> <br> 
+<a href='https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token'>Login with AniList</a>
+</span> </div>
+
+<div class="guestbook"> </div><a href="http://users.smartgb.com/g/g.php?a=s&i=g19-01496-c9"><img alt="Guestbook" border="0" src="http://extras.smartgb.com/b/gb_80x40.gif" width="80" height="40" align="right"></a> <div align="left">  Made by: <a href="https://anilist.co/user/Darielquinta/">Darielquinta </a>  </div>
+
+<script>
+function searchAnime() {
+  var input = document.getElementById('anime').value;
+  localStorage.setItem("searchQuery",input);
+  console.log(localStorage.getItem("searchQuery"));
+  location.href = "animeSearch.html";
+  // console.log(input);
+}
+
+/* var ID = window.prompt("Please input the ID of the anime you want to search.");
+// Here we define our query as a multi-line string
+// Storing it in a separate .graphql/.gql file is also possible
+var query = `
+query ($id: Int) { # Define which variables will be used in the query (id)
+  Media (id: $id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+    id
+    title {
+      romaji
+      english
+      native
+    }
+    tags {
+        name
+    }
+    reviews(limit: 5, sort: [SCORE], page: 1, perPage: 3) {
+        nodes {
+            summary
+            score
+            body
+            user {
+                name
+                id
+                avatar {
+                    medium
+                }
+            }
+        }
+            
+    }
+  }
+}
+`;
+
+
+// Define our query variables and values that will be used in the query request
+var variables = {
+    id: ID
+};
+
+// Define the config we'll need for our Api request
+var url = 'https://graphql.anilist.co',
+    options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: variables
+        })
+    };
+
+// Make the HTTP Api request
+fetch(url, options).then(handleResponse)
+                   .then(handleData)
+                   .catch(handleError);
+
+function handleResponse(response) {
+    return response.json().then(function (json) {
+        return response.ok ? json : Promise.reject(json);
+    });
+}
+
+function handleData(data) {
+   document.write(`<a href="search.html"> <button type="button"> test </button></a>`);
+    console.log(data);
+    var romajiTitle = data.data.Media.title.romaji;
+    var englishTitle = data.data.Media.title.english;
+    localStorage.setItem("animeName",englishTitle);
+    console.log(localStorage.getItem("animeName"));
+
+
+    var nativeTitle = data.data.Media.title.native;
+    //var reviewSummary = data.data.Media.reviews.nodes.summary;
+
+    document.write(`<h3> Titles </h3>`);
+    document.write(`Romaji Title: ${romajiTitle} <br>`);
+    document.write(`English Title: ${englishTitle} <br>`);
+    document.write(`Native Title: ${nativeTitle} <br>`);
+
+    document.write(" <h3> Tags </h3>");
+    var tags = data.data.Media.tags.map(tags => tags.name).join('<br> - ');
+    document.write(`- ${tags} <br><br>`);
+
+    document.write(" <h3> Reviews </h3>");
+    var review = data.data.Media.reviews.nodes.map(review => `
+        <p> User: <a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a> <p>
+        <p> Score: <b>${review.score}</b> <p> 
+        <p> Summary: ${review.summary} </p> <br>
+        <div> Review: ${marked.parse(review.body)} </div>
+    `).join('<br><hr class="solid"> <br>');
+    document.write(` ${review} <br> `);
+
+}
+
+function handleError(error) {
+    alert('Error, check console');
+    console.error(error);
+} */
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        hr.solid {
+            border-top: 3px solid #bbb;
+        }
+
+
+        body {
+            background-color: #EEEEEE;
+            color: black;
+            font-family: Verdana;
+        }
+
+		.padding {
+			padding-left: 10%;
+			padding-right: 10%;
+		}
+
+        .banner {
+            width: 100%;
+            height: 50px; 
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }   
+        
+        .banner img {
+            margin-top: 50px;
+            background-color: #EEEEEE;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+</head>
+
+<body>
+<script>
+function getQueryParam(param) {
+   var urlParams = new URLSearchParams(location.search);
+   return urlParams.get(param);
+ }
+
+var animeId = getQueryParam("id"); 
+
+// Here we define our query as a multi-line string
+// Storing it in a separate .graphql/.gql file is also possible
+var query = `
+query ($id: Int) { # Define which variables will be used in the query (id)
+  Media (id: $id) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+    id
+    title {
+      romaji
+      english
+      native
+    }
+    tags {
+        name
+    }
+    reviews(limit: 5, sort: [SCORE], page: 1, perPage: 3) {
+        nodes {
+            summary
+            score
+            body
+            user {
+                name
+                id
+                avatar {
+                    medium
+                }
+            }
+            siteUrl
+        }
+            
+    }
+    bannerImage
+  }
+}
+`;
+
+// Define our query variables and values that will be used in the query request
+var variables = {
+    id: parseInt(animeId)
+};
+
+// Define the config we'll need for our Api request
+var url = 'https://graphql.anilist.co',
+    options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: variables
+        })
+    };
+
+// Make the HTTP Api request
+fetch(url, options).then(handleResponse)
+                   .then(handleData)
+                   .catch(handleError);
+
+function handleResponse(response) {
+    return response.json().then(function (json) {
+        return response.ok ? json : Promise.reject(json);
+    });
+}
+
+function handleData(data) {
+    // document.write(`<a href="search.html"> <button type="button"> test </button></a>`);
+    // console.log(data);
+    var romajiTitle = data.data.Media.title.romaji;
+    var englishTitle = data.data.Media.title.english;
+    var banner = data.data.Media.bannerImage;
+
+    // var bannerDiv = document.createElement('div');
+    // bannerDiv.className = 'banner';
+    // bannerDiv.style.backgroundImage = `url('${banner}')`;
+    // document.body.appendChild(bannerDiv);
+
+    localStorage.setItem("animeName",englishTitle);
+    console.log(localStorage.getItem("animeName"));
+
+    document.write(`
+        <table bgcolor="C0C0C0" style="width: 100%">
+            <tr>
+                <td> <a href="index.html"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
+                <td style="width: 100%" class="center"> <center> <h1> AniList 2 </h1></center>
+            </tr>
+        </table>           
+            <br>`);
+
+    document.write(`<img class="padding" src="${banner}" width="100%" height="200px" style="object-fit: cover"> <br>`);
+
+    var nativeTitle = data.data.Media.title.native;
+    //var reviewSummary = data.data.Media.reviews.nodes.summary;
+    document.write(`
+        <div class="padding">
+            <center> <h1> ${englishTitle} </h1> </center>
+            <h3> Titles </h3>
+            Romaji Title: ${romajiTitle} <br>
+            English Title: ${englishTitle} <br>
+            Native Title: ${nativeTitle} <br>
+        </div>
+    `);
+    
+    document.write(" <h3> Tags </h3>");
+    var tags = data.data.Media.tags.map(tags => tags.name).join('<br> - ');
+    document.write(`- ${tags} <br><br>`);
+
+    document.write(" <center> <h2> Reviews </h2> </center>");
+    var review = data.data.Media.reviews.nodes.map(review => `
+        <p> <img src="${review.user.avatar.medium}" style="width: 5%"> <a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a> <p>
+        <p> Score: <b>${review.score}</b> <p> 
+        <p> Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name}> ${review.summary} </a> </p> <br>
+    `).join('<br><hr class="solid"> <br>');
+    document.write(` ${review} <br> `);
+
+    document.querySelectorAll('.review').forEach(item => {
+      item.addEventListener('click', event => {
+        var animeId = event.target.closest('.review').getAttribute('data-id');
+        localStorage.setItem("reviewUser", event.target.closest('.review').getAttribute('user'));
+        console.log(animeId);
+        console.log(localStorage.getItem("reviewUser"));
+        window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
+      });
+    });
+}
+
+function handleError(error) {
+    alert('Error, check console lol');
+    console.error(error);
+}
+
+</script>
+
+</body>
+</html>
