@@ -103,14 +103,37 @@ function handleResponse(response) {
     });
 }
 
+async function openAIResponse() {
+    var API_KEY = 'CHATGPT KEY HERE';
+
+    var response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{role: "user", content: "test"}]
+                    })
+    });
+
+    var data = await response.json();
+
+    var chatGPTResponse = data.choices[0].message.content;
+    return chatGPTResponse;
+    // toDo: Fix what is being grabbed for console.log
+}
 
 function handleData(data) {
-    
+
+
     var favoritesTitles = data.data.Viewer.favourites.anime.nodes.map(anime => `
     ${anime.title.english}
-    `).join('');
+    `).join('<br> ');
 
     console.log(favoritesTitles);
+    console.log(openAIResponse());
 
 
     document.body.innerHTML = `
@@ -123,7 +146,9 @@ function handleData(data) {
         <img src=${data.data.Viewer.bannerImage} width=100%>
         <center> <h2> Authorized! Welcome back ${data.data.Viewer.name}! </h2> </center> <br>
         <center> <img src="${data.data.Viewer.avatar.medium}"> </center> <br>
-        <p> About me: ${marked.parse(data.data.Viewer.about)} </p>
+        <p> About me: ${marked.parse(data.data.Viewer.about)} </p> <br>
+        <p> Favorites: <br> ${favoritesTitles} </p> <br>
+
         <br> <br>`;
 
 
