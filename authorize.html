@@ -2,6 +2,7 @@
 <html>
 <head>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         hr.solid {
             border-top: 3px solid #bbb;
@@ -121,7 +122,8 @@ function handleData(data) {
         </table>
         <img src=${data.data.Viewer.bannerImage} width=100%>
         <center> <h2> Authorized! Welcome back ${data.data.Viewer.name}! </h2> </center> <br>
-        <p> About me: ${data.data.Viewer.about} </p>
+        <center> <img src="${data.data.Viewer.avatar.medium}"> </center> <br>
+        <p> About me: ${marked.parse(data.data.Viewer.about)} </p>
         <br> <br>`;
 
 
