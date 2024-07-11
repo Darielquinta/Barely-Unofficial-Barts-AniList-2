@@ -33,37 +33,46 @@
     
     </div>
 <script>
+/* */
+
+let finalAnswer = "No answer";
 
 var query = `
-query { # Define which variables will be used in the query (id)
-        Viewer {
-            name
-            about
-            avatar {
-                medium
-                }
-            bannerImage
-            favourites {
-                anime {
-                    nodes {
-                        id
-                        title {
-                            english
-                        }
+query {
+    Viewer {
+        name
+        about
+        avatar {
+            medium
+        }
+        bannerImage
+        favourites {
+            anime {
+                nodes {
+                    id
+                    title {
+                        english
                     }
                 }
             }
-
         }
+        statistics {
+            anime {
+                scores(limit: 5 sort: [COUNT]) {
+                    score
+                }
+                statuses(limit: 5 sort:[COUNT]) {
+                    status
+                }
+
+
+            }
+        }
+    }
 }
 `;
 
-
-// Define our query variables and values that will be used in the query request
-var variables = {
-};
-
-console.log(localStorage.getItem("searchQuery"));
+var variables = {};
 
 function getAccessToken() {
     var hash = window.location.hash.substring(1);
@@ -73,8 +82,7 @@ function getAccessToken() {
 
 var accessToken = getAccessToken();
 
-function fetchData() {
-    // Define the config we'll need for our Api request
+async function fetchData() {
     var options = {
         method: 'POST',
         headers: {
@@ -88,14 +96,20 @@ function fetchData() {
         })
     };
 
-    // Make the HTTP Api request
-    fetch('https://graphql.anilist.co', options).then(handleResponse)
-                        .then(handleData)
-                        .catch(handleError);
+    try {
+        const response = await fetch('https://graphql.anilist.co', options);
+        const json = await handleResponse(response);
+
+        const favoritesTitles = json.data.Viewer.favourites.anime.nodes.map(anime => `
+    ${anime.title.english}
+    `).join('<br> ');
+    
+        const openAIDescription = await openAIResponse(favoritesTitles);
+        handleData(json, openAIDescription, favoritesTitles);
+    } catch (error) {
+        handleError(error);
+    }
 }
-
-
-fetchData();
 
 function handleResponse(response) {
     return response.json().then(function (json) {
@@ -103,67 +117,76 @@ function handleResponse(response) {
     });
 }
 
-async function openAIResponse() {
-    var API_KEY = 'CHATGPT KEY HERE';
+async function openAIResponse(favoritesTitles) {
+    var API_KEY = "AI KEY HERE";
 
-    var response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${API_KEY}`
+    try {
+        var response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an assistant that recommends anime based on the user's favorites. Be as concise as possible, creating a bullet list of 5."
                     },
-                    body: JSON.stringify({
-                        model: "gpt-3.5-turbo",
-                        messages: [{role: "user", content: "test"}]
-                    })
-    });
+                    {
+                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}`
+                    }]
+            })
+        });
 
-    var data = await response.json();
-
-    var chatGPTResponse = data.choices[0].message.content;
-    return chatGPTResponse;
-    // toDo: Fix what is being grabbed for console.log
+        var data = await response.json();
+        console.log(data.choices[0].message.content);  // Log the actual response content
+        return data.choices[0].message.content;
+    } catch (error) {
+        console.error('Error:', error);
+        return "An error occurred while fetching the response.";
+    }
 }
 
-function handleData(data) {
-
-
-    var favoritesTitles = data.data.Viewer.favourites.anime.nodes.map(anime => `
-    ${anime.title.english}
-    `).join('<br> ');
-
-    console.log(favoritesTitles);
-    console.log(openAIResponse());
-
-
+function handleData(data, openAIDescription, favoritesTitles) {
+    console.log(data.data.Viewer.statistics.anime.statuses.status);
+    //        const favoritesTitles = json.data.Viewer.favourites.anime.nodes.map(anime => `${anime.title.english}`).join('<br> ');
+    var animeScores = data.data.Viewer.statistics.anime.scores.map(score => ` Score: ${score.score}`).join('<br> ');
+    var animeStatus = data.data.Viewer.statistics.anime.statuses.map(status => ` Status: ${status}`).join('<br> ');
     document.body.innerHTML = `
-              <table class="padding" bgcolor="C0C0C0" style="width: 100%">
+        <table class="padding" bgcolor="C0C0C0" style="width: 100%">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
                 <td style="width: 100%; padding: 0;"> <center><h1 style="margin: 0;"> AniList 2 </h1></center>
             </tr>
         </table>
+        
+
         <img src=${data.data.Viewer.bannerImage} width=100%>
         <center> <h2> Authorized! Welcome back ${data.data.Viewer.name}! </h2> </center> <br>
         <center> <img src="${data.data.Viewer.avatar.medium}"> </center> <br>
         <p> About me: ${marked.parse(data.data.Viewer.about)} </p> <br>
         <p> Favorites: <br> ${favoritesTitles} </p> <br>
-
+        <p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
+        
+        <p> ${animeScores} </p>
+        
         <br> <br>`;
 
-
     console.log(getAccessToken());
-} 
+}
+
+//<p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
 
 function handleError(error) {
     alert('Error, check console lol');
     console.error(error);
 }
 
+// Call fetchData when the script loads
+fetchData();
+
 </script>
-
-
-
-
 </body>
 </html>
