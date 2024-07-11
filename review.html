@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,31 +11,22 @@
     .review {
         text-wrap: wrap;
     }
-
-
-</style>
+    </style>
 </head>
 
 <body>
 <script>
-
 function getQueryParam(param) {
    var urlParams = new URLSearchParams(location.search);
    return urlParams.get(param);
- }
+}
 
 var animeId = getQueryParam("id"); 
 var reviewUser = getQueryParam("review.nodes.user.name");
-// console.log("animeID: " + animeId);
-//console.log("parseInt(animeID): " + typeof(parseInt(animeId)));
 
-
-
-// Here we define our query as a multi-line string
-// Storing it in a separate .graphql/.gql file is also possible
 var query = `
-query ($id: Int) { # Define which variables will be used in the query (id)
-  Media (id: $id) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+query ($id: Int) {
+  Media (id: $id) {
     id
     title {
       romaji
@@ -60,21 +50,18 @@ query ($id: Int) { # Define which variables will be used in the query (id)
             }
             siteUrl
         }
-            
     }
     bannerImage
   }
 }
 `;
 
-// Define our query variables and values that will be used in the query request
 var variables = {
     id: parseInt(animeId)
 };
 
-// Define the config we'll need for our Api request
-var url = 'https://graphql.anilist.co',
-    options = {
+async function fetchData() {
+    var options = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -86,10 +73,19 @@ var url = 'https://graphql.anilist.co',
         })
     };
 
-// Make the HTTP Api request
-fetch(url, options).then(handleResponse)
-                   .then(handleData)
-                   .catch(handleError);
+    try {
+        const response = await fetch('https://graphql.anilist.co', options);
+        const json = await handleResponse(response);
+
+        reviewUser = localStorage.getItem("reviewUser");
+        console.log(`reviewUser: ${reviewUser}`);
+        var selectedReview = json.data.Media.reviews.nodes.find(review => review.user.name === reviewUser);
+        handleData(json, selectedReview);
+
+    } catch (error) {
+        handleError(error);
+    }
+}
 
 function handleResponse(response) {
     return response.json().then(function (json) {
@@ -97,42 +93,70 @@ function handleResponse(response) {
     });
 }
 
-function handleData(data) {
-    document.write(`
+async function openAIResponse(reviewText) {
+    var API_KEY = "OPENAI KEY HERE";
+
+    try {
+        var response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an assistant that summarizes a review in a few sentences. Write it in their voice. Make sure it is one paragraph long."
+                    },
+                    {
+                        role: "user", content: `Summarize this review: ${reviewText}`
+                    }]
+            })
+        });
+
+        var data = await response.json();
+        console.log(data.choices[0].message.content);
+        return data.choices[0].message.content;
+    } catch (error) {
+        console.error('Error:', error);
+        return "An error occurred while fetching the response.";
+    }
+}
+
+function handleData(data, selectedReview) {
+    console.log(selectedReview);
+    document.body.innerHTML = `
         <table bgcolor="C0C0C0" style="width: 100%">
             <tr>
                 <td> <a href="index.html"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
                 <td style="width: 100%" class="center"> <center> <h1> AniList 2 </h1></center>
-
             </tr>
-
-        </table>           
-            <br>`);
-        
-    reviewUser = localStorage.getItem("reviewUser");
-  // document.write(`<a href="search.html"> <button type="button"> test </button></a>`);
-    console.log(data);
-    var banner = data.data.Media.bannerImage;
-    console.log(banner)
-
-
-    var nativeTitle = data.data.Media.title.native;
-    //var reviewSummary = data.data.Media.reviews.nodes.summary;
-    document.write(`<img src="${banner}" width="100%" height="0%"> <br>`);
-
-    var selectedReview = data.data.Media.reviews.nodes.find(review => review.user.name === reviewUser);
+        </table>
+        <br>
+        <img src="${data.data.Media.bannerImage}" width="100%" height="0%"> <br>
+    `;
 
     if(selectedReview) {
-        document.write(`
-         <p> <a href="https://anilist.co/user/${selectedReview.user.name}"> <img src="${selectedReview.user.avatar.medium}" style="width: 5%"> ${selectedReview.user.name}</a> <p>
-        <p> Score: <b>${selectedReview.score}</b> <p> 
-        <p> Summary:  ${selectedReview.summary} </p> <br>
-        <div class="review"> Review: ${marked.parse(selectedReview.body)} </div>
-        `)
+        document.body.innerHTML += `
+         <p> <a href="https://anilist.co/user/${selectedReview.user.name}"> <img src="${selectedReview.user.avatar.medium}" style="width: 5%"> ${selectedReview.user.name}</a> </p>
+        <p> Score: <b>${selectedReview.score}</b> </p> 
+        <button id="deyap">De-yappifier</button>
+        <p> Summary: ${selectedReview.summary} </p> <br>
+        <div id="reviewContent" class="review">Review: ${marked.parse(selectedReview.body)}</div>
+        `;
+       
+        document.getElementById("deyap").addEventListener("click", async function() {
+            this.disabled = true;
+            this.textContent = "De-yapping...";
+            const deyappedReview = await openAIResponse(selectedReview.body);
+            document.getElementById("reviewContent").innerHTML = `De-yapped Review: ${deyappedReview}`;
+            this.textContent = "De-yapped!";
+        });
+    } else {
+        document.body.innerHTML += `<p>No review found for this user.</p>`;
     }
-
-    //document.write(` ${review} <br> `);
-
 }
 
 function handleError(error) {
@@ -140,7 +164,7 @@ function handleError(error) {
     console.error(error);
 }
 
+fetchData();
 </script>
-
 </body>
 </html>
