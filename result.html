@@ -81,6 +81,7 @@ query ($id: Int) { # Define which variables will be used in the query (id)
         }
             
     }
+    description
     bannerImage
   }
 }
@@ -91,9 +92,8 @@ var variables = {
     id: parseInt(animeId)
 };
 
-// Define the config we'll need for our Api request
-var url = 'https://graphql.anilist.co',
-    options = {
+async function fetchData() {
+    var options = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -105,10 +105,53 @@ var url = 'https://graphql.anilist.co',
         })
     };
 
-// Make the HTTP Api request
-fetch(url, options).then(handleResponse)
-                   .then(handleData)
-                   .catch(handleError);
+    try {
+        
+        const response = await fetch('https://graphql.anilist.co', options);
+
+        const json = await handleResponse(response);
+        var description = json.data.Media.description;
+
+        var tags = json.data.Media.tags.map(tags => tags.name).join('<br> - ');
+        //const openAIRecommender = await openAIResponse(tags, description);
+        handleData(json, null, tags, description);
+
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+async function openAIResponse(tags, description) {
+    var API_KEY = "OPENAI KEY HERE";
+
+    try {
+        var response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an assistant that receives information about an anime and then recommends five anime based on it. Be very concise and give bulletpoints. Explain why you recommend it."
+                    },
+                    {
+                        role: "user", content: `Recommend based on these tags: ${tags} AND this description: ${description}`
+                    }]
+            })
+        });
+
+        var data = await response.json();
+        console.log(data.choices[0].message.content);
+        return data.choices[0].message.content;
+    } catch (error) {
+        console.error('Error:', error);
+        return "An error occurred while fetching the response.";
+    }
+}
 
 function handleResponse(response) {
     return response.json().then(function (json) {
@@ -116,7 +159,7 @@ function handleResponse(response) {
     });
 }
 
-function handleData(data) {
+function handleData(data, openAIRecommender, tags, description) {
     // document.write(`<a href="search.html"> <button type="button"> test </button></a>`);
     // console.log(data);
     var romajiTitle = data.data.Media.title.romaji;
@@ -152,10 +195,13 @@ function handleData(data) {
             English Title: ${englishTitle} <br>
             Native Title: ${nativeTitle} <br>
         </div>
+        <br>
+        <div>
+           ${description}
+        </div>
     `);
     
     document.write(" <h3> Tags </h3>");
-    var tags = data.data.Media.tags.map(tags => tags.name).join('<br> - ');
     document.write(`- ${tags} <br><br>`);
 
     document.write(" <center> <h2> Reviews </h2> </center>");
@@ -175,7 +221,23 @@ function handleData(data) {
         window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
       });
     });
+
+    document.write("<center> <h2> Recommendations </h2> </center> <div id='recommendations'> </div>");
+
+    document.body.innerHTML += `
+    <button id="ai-recommend">Load Recommendations</button>
+    `;
+
+    document.getElementById("ai-recommend").addEventListener("click", async function() {
+        this.disabled = true;
+        this.textContent = "Loading recommendations...";
+        const openAIRecommender = await openAIResponse(tags, description);
+        document.getElementById("recommendations").innerHTML = `Recommendations: ${marked.parse(openAIRecommender)}`;
+            this.textContent = "Done!";
+        });
 }
+
+fetchData();
 
 function handleError(error) {
     alert('Error, check console lol');
