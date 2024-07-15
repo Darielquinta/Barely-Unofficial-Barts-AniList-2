@@ -10,12 +10,8 @@
     }
 
     html, body, .container, script {
-        height: 95.5%;
+        height: 100%;
         
-    }
-
-    .guestbook {
-        height: 10%
     }
 
     .container {
@@ -33,6 +29,16 @@
         font-size: large;
     }
 
+    .login {
+        background-color: #3c5ebc;
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 10px;
+        font-size: large;
+        
+    }
+
     input[type=text] {
         background-color: gray;
         color: white;
@@ -45,21 +51,40 @@
     ::placeholder {
         color: rgb(189, 189, 189);
     }
+
+    .bg {
+        background-image: url('adv_bg_5.jpg'); 
+        opacity: .9;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size:cover;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    a:visited {
+        text-decoration: none;
+        color: white;
+    }
+
+
 </style>
 </head>
 
-<body>
+<body class="bg">
 
 
-<div class="container"><span> <center><h1>Barely Unofficial Bart's AniList 2 </h1> <h3> Search </h3> 
+<div class="container"><span> <center><h1>AniList 2 </h1> <h3> Search </h3> 
 <form id="form" onsubmit="return false;">
 <input  type="text" id="anime" name="anime" size="30" autofocus style="color:white;" placeholder="Type something like: Kemono Friends"/><br> <br>
   <input type="submit" onclick="searchAnime();" />
 </form> </center> <br> 
-<a href='https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token'>Login with AniList</a>
+<center> <button class="login"><a href='https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token'>Login with AniList</a> </button></center>
 </span> </div>
 
-<div class="guestbook"> </div><a href="http://users.smartgb.com/g/g.php?a=s&i=g19-01496-c9"><img alt="Guestbook" border="0" src="http://extras.smartgb.com/b/gb_80x40.gif" width="80" height="40" align="right"></a> <div align="left">  Made by: <a href="https://anilist.co/user/Darielquinta/">Darielquinta </a>  </div>
+<div><a href="http://users.smartgb.com/g/g.php?a=s&i=g19-01496-c9"><img alt="Guestbook" border="0" src="http://extras.smartgb.com/b/gb_80x40.gif" width="80" height="40" align="right"></a> <div align="left">  Made by: <a href="https://anilist.co/user/Darielquinta/">Darielquinta </a>  </div> 
 
 <script>
 function searchAnime() {
