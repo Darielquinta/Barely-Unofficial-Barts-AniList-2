@@ -1,4 +1,2 @@
-# Barely Unofficial Bart's AniList 2
- Also known as: BUBA2 
- 
+# Barely Unofficial AniList 2
  AniList but good
