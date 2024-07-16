@@ -78,7 +78,7 @@
     .bg::before {
 
         content: "";
-        background-image: url('adv_bg_5.jpg');
+        background-image: url('backgrounds/adv_bg_5.jpg');
         background-repeat: no-repeat;
         background-position: center;
         background-size:cover;
@@ -131,7 +131,83 @@ function searchAnime() {
   location.href = "animeSearch.html";
   // console.log(input);
 }
+
+function changeBackgroundImage(newBackground) {
+    styleElement = document.createElement('style');
+    styleElement.id = 'dynmaic-style';
+    document.head.appendChild(styleElement);
+    
+    var newStyle = `
+        .bg::before {
+            content: "";
+            background-image: url('${newBackground}');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            opacity: 0.5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+        }
+    `;
+    styleElement.innerHTML = newStyle;
+}
+
+
+
+var bgImages = [
+    'backgrounds/adv_bg_1.jpg',
+    'backgrounds/adv_bg_2.jpg',
+    'backgrounds/adv_bg_3.jpg',
+    'backgrounds/adv_bg_4.jpg',
+    'backgrounds/adv_bg_5.jpg',
+    'backgrounds/adv_bg_6.jpg',
+    'backgrounds/adv_bg_7.jpg',
+    'backgrounds/adv_bg_8.jpg',
+    'backgrounds/adv_bg_9.jpg',
+    'backgrounds/adv_bg_10.jpg',
+    'backgrounds/adv_bg_11.jpg',
+    'backgrounds/adv_bg_12.jpg',
+    'backgrounds/adv_bg_13.png',
+    'backgrounds/adv_bg_14.jpg',
+    'backgrounds/adv_bg_15.jpg',
+    'backgrounds/adv_bg_16.jpg',
+    'backgrounds/adv_bg_17.jpg',
+    'backgrounds/adv_bg_18.jpg',
+    'backgrounds/adv_bg_19.jpg',
+    'backgrounds/adv_bg_20.jpg',
+    'backgrounds/adv_bg_21.jpg',
+    'backgrounds/adv_bg_22.jpg',
+    'backgrounds/adv_bg_23.jpg',
+    'backgrounds/adv_bg_24.jpg',
+    'backgrounds/adv_bg_25.jpg',
+    'backgrounds/adv_bg_26.jpg',
+    'backgrounds/adv_bg_27.jpg',
+    'backgrounds/adv_bg_28.jpg',
+    'backgrounds/adv_bg_29.jpg',
+    'backgrounds/adv_bg_30.jpg',
+    'backgrounds/adv_bg_31.jpg',
+    'backgrounds/adv_bg_32.jpg',
+    'backgrounds/adv_bg_33.jpg',
+    'backgrounds/adv_bg_34.jpg',
+    'backgrounds/adv_bg_35.jpg',
+    'backgrounds/adv_bg_36.jpg',
+    'backgrounds/adv_bg_37.jpg',
+    'backgrounds/adv_bg_38.jpg',
+    'backgrounds/adv_bg_39.jpg',
+    'backgrounds/adv_bg_40.jpg',
+    'backgrounds/adv_bg_41.jpg'
+]
+
+var randomBackground = Math.round(Math.random() * bgImages.length);
+
+changeBackgroundImage(bgImages[randomBackground]);
 </script>
+
+
 
 </body>
 </html>
