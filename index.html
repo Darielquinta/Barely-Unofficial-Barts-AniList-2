@@ -32,7 +32,7 @@
     }
 
 
-    input[type=submit] {
+    input[type=button] {
         background-color: #3CBC8D;
         color: white;
         border: none;
@@ -52,7 +52,7 @@
         background-color: #3c5ebc;
         color: white;
         border: none;
-        padding: 16px 32px;
+        padding: 8px 32px;
         border-radius: 10px;
         font-size: large;
         
@@ -110,12 +110,14 @@
 <body class="bg">
 
 <div class="main-container">
-    <div class="content-container"><span> <center><h1>AniList 2 </h1> <h3> Search </h3> 
-    <form id="form" onsubmit="return false;">
-    <input  type="text" id="anime" name="anime" size="30" autofocus style="color:white;" placeholder="Type something like: Kemono Friends"/><br> <br>
-    <input type="submit" onclick="searchAnime();" />
-    </form> </center> <br> 
-    <center> <button class="login"><a href='https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token'>Login with AniList</a> </button></center>
+    <div class="content-container"><span> 
+        <center> <div style="font-size: 500%; font-weight: bold;"> AniList 2 </div>
+        <div style="font-size: 200%; font-weight: bold;"> Search </div> <br>
+        <form id="form" onsubmit="return false;">
+        <input  type="text" id="anime" name="anime" size="30" autofocus style="color:white;" placeholder="Type something like: Kemono Friends"/><br> <br>
+        <input type="button" onclick="searchAnime();" value="Search" />
+        </form> </center> <br> 
+        <center> <button class="login"><a href='https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token'>Login with AniList</a> </button></center>
     </span> </div>
 
     <div class="footer"> 
@@ -134,9 +136,9 @@ function searchAnime() {
 
 function changeBackgroundImage(newBackground) {
     styleElement = document.createElement('style');
-    styleElement.id = 'dynmaic-style';
+    styleElement.id = 'dynamic-style';
     document.head.appendChild(styleElement);
-    
+
     var newStyle = `
         .bg::before {
             content: "";
