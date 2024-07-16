@@ -23,6 +23,18 @@
             padding: 0;
             width: 100%;
 		}
+
+        #next-page, #previous-page {
+            margin: auto;
+            width: 50%;
+            padding: 10px;
+            background-color: #3CBC8D;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+
+            font-size: large;
+        }
     </style>
 </head>
 <body >
@@ -141,7 +153,27 @@ function handleData(data) {
     
 
 
+    if(variables.page > 1) {
+        var previousPageButton = document.createElement('button');
+        previousPageButton.type = 'button';
+        previousPageButton.id = 'previous-page';
+        previousPageButton.innerText = 'Back'; 
+        document.body.appendChild(previousPageButton);
+
+        document.getElementById("previous-page").addEventListener("click", function() {
+            document.body.innerHTML = "";
+            variables.page -= 1;
+            //window.location.href = `animeSearch.html?id=${variables.page}`;
+            // let url = new URL("http://127.0.0.1:5500/Wesbite/animeSearch.html3243");
+            // let params = new URLSearchParams(url.search);
+            console.log(variables.page);
+            fetchData();
+            // url.searchParams.append(`page`, `variables.page`);
+        });
+    }
+        
     if(data.data.Page.pageInfo.hasNextPage) {
+
 
         var nextPageButton = document.createElement('button');
         nextPageButton.type = 'button';
@@ -159,6 +191,8 @@ function handleData(data) {
             fetchData();
             // url.searchParams.append(`page`, `variables.page`);
         });
+
+
     }
 
 
