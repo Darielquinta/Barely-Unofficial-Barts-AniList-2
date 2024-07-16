@@ -1,4 +1,4 @@
-# Barely Unofficial Bart's AniList 2
- Also known as: BUBA2
+# Barely Unofficial Bart's AniList 2 (AKA BUBA2)
+ Available at: https://darielquinta.neocities.org/
 
  AniList but good
