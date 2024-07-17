@@ -37,6 +37,10 @@
             position: relative;
             z-index: 1;
         }
+
+        .test {
+            background-color: blue;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -235,10 +239,11 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
     var nativeTitle = data.data.Media.title.native;
     const sentenceRecommend = await openAIResponse2(description, englishTitle, reviewSummary);
     //var reviewSummary = data.data.Media.reviews.nodes.summary;
+
     document.write(`
         <div class="padding">
             <center> <h1> ${englishTitle} </h1> </center>
-            <h3> Recommended? </h3> ${sentenceRecommend}
+           <div class="test" style="background-color: orange; padding: 5px 5px 15px 15px"> <h3> Recommended? </h3> ${sentenceRecommend}  </div>
             <h3> Titles </h3>
             Romaji Title: ${romajiTitle} <br>
             English Title: ${englishTitle} <br>
