@@ -80,7 +80,11 @@ function getAccessToken() {
     return params.get('access_token');
 }
 
+
+
 var accessToken = getAccessToken();
+localStorage.setItem("accessToken", accessToken);
+console.log(localStorage.getItem("accessToken"));
 
 async function fetchData() {
     var options = {
@@ -175,7 +179,12 @@ function handleData(data, openAIDescription, favoritesTitles) {
         <br> <br>`;
 
     console.log(getAccessToken());
+
+    localStorage.setItem("favoritesTitles", favoritesTitles);
+    console.log(localStorage.getItem("favoritesTitles"));
 }
+
+
 
 //<p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
 
