@@ -212,15 +212,7 @@ function handleData(data, openAIRecommender, tags, description) {
     `).join('<br><hr class="solid"> <br>');
     document.write(` ${review} <br> `);
 
-    document.querySelectorAll('.review').forEach(item => {
-      item.addEventListener('click', event => {
-        var animeId = event.target.closest('.review').getAttribute('data-id');
-        localStorage.setItem("reviewUser", event.target.closest('.review').getAttribute('user'));
-        console.log(animeId);
-        console.log(localStorage.getItem("reviewUser"));
-        window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
-      });
-    });
+
 
     document.write("<center> <h2> Recommendations </h2> </center> <div id='recommendations'> </div>");
 
@@ -235,6 +227,16 @@ function handleData(data, openAIRecommender, tags, description) {
         document.getElementById("recommendations").innerHTML = `Recommendations: ${marked.parse(openAIRecommender)}`;
             this.textContent = "Done!";
         });
+
+        document.querySelectorAll('.review').forEach(item => {
+      item.addEventListener('click', event => {
+        var animeId = event.target.closest('.review').getAttribute('data-id');
+        localStorage.setItem("reviewUser", event.target.closest('.review').getAttribute('user'));
+        console.log(animeId);
+        console.log(localStorage.getItem("reviewUser"));
+        window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
+      });
+    });
 }
 
 fetchData();
