@@ -16,6 +16,12 @@
 
 <body>
 <script>
+var openAIKey = localStorage.getItem("openAIKey");;
+if(openAIKey === null || openAIKey === "" || openAIKey === undefined) {
+    openAIKey = prompt("Provide your OpenAI key here: ");
+    localStorage.setItem("openAIKey", openAIKey);
+}
+
 function getQueryParam(param) {
    var urlParams = new URLSearchParams(location.search);
    return urlParams.get(param);
@@ -94,7 +100,7 @@ function handleResponse(response) {
 }
 
 async function openAIResponse(reviewText) {
-    var API_KEY = "OPENAI KEY HERE";
+    var API_KEY = localStorage.getItem("openAIKey");
 
     try {
         var response = await fetch('https://api.openai.com/v1/chat/completions', {

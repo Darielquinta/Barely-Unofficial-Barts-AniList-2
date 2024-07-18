@@ -53,6 +53,12 @@
     </div>
 
 <script>
+var openAIKey = localStorage.getItem("openAIKey");;
+if(openAIKey === null || openAIKey === "" || openAIKey === undefined) {
+    openAIKey = prompt("Provide your OpenAI key here: ");
+    localStorage.setItem("openAIKey", openAIKey);
+}
+
 function getQueryParam(param) {
    var urlParams = new URLSearchParams(location.search);
    return urlParams.get(param);
@@ -139,7 +145,7 @@ async function fetchData() {
 }
 
 async function openAIResponse(tags, description) {
-    var API_KEY = "OPENAI KEY HERE";
+    var API_KEY = localStorage.getItem("openAIKey");
 
     try {
         var response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -171,7 +177,7 @@ async function openAIResponse(tags, description) {
 }
 
 async function openAIResponse2(description, englishTitle, reviewSummary) {
-    var API_KEY = "OPENAI KEY HERE";
+    var API_KEY = localStorage.getItem("openAIKey");
     var favoritesTitles = localStorage.getItem("favoritesTitles");
     console.log(favoritesTitles);
     console.log(englishTitle);
