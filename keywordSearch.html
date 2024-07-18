@@ -171,14 +171,14 @@ async function handleData() {
     
     console.log(`Current keywords: ${keywords.join(', ')}`)
     const anime = await openAIResponse(keywords.join(", "));
-    
+    var animeID = await getAnimeId(anime);
     var animeName = document.createElement('div');
     animeName.className = 'banner';
     animeName.textContent = anime;
     document.body.appendChild(animeName);
     document.body.innerHTML += `<img src="${bannerImage}"> test`;
     document.body.innerHTML += `${description} test`;
-    var animeID = await getAnimeId(anime);
+
     console.log(`ID: ${id}`)
     
 }
