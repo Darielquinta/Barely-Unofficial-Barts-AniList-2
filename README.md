@@ -1,4 +1,5 @@
-# Barely Unofficial Bart's AniList 2 (AKA BUBA2)
- Available at: https://darielquinta.neocities.org/
+![BuBa 2 logo](logo.png "Title")
+# Barely Unofficial Bart's AniList 2 (AKA BuBa 2)
+ Available at: buba2.co
 
  AniList but good
