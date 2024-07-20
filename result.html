@@ -16,8 +16,8 @@
         }
 
 		.padding {
-			padding-left: 10%;
-			padding-right: 10%;
+			padding-left: 25%;
+			padding-right: 25%;
 		}
 
         .banner {
@@ -41,15 +41,26 @@
         .test {
             background-color: blue;
         }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 </head>
 
 <body>
-    <div class="loading">
-        <center> <h1> Loading, please wait... </h1> </center>
-    
+    <div class="bg">
+        <div id="content">
+            <center> <h1> Loading, please wait... </h1> </center>
+        </div>
     </div>
 
 <script>
@@ -217,67 +228,48 @@ function handleResponse(response) {
 }
 
 async function handleData(data, openAIRecommender, tags, description, englishTitle, reviewSummary) {
-    // document.write(`<a href="search.html"> <button type="button"> test </button></a>`);
-    // console.log(data);
     var romajiTitle = data.data.Media.title.romaji;
-
     var banner = data.data.Media.bannerImage;
-
-    // var bannerDiv = document.createElement('div');
-    // bannerDiv.className = 'banner';
-    // bannerDiv.style.backgroundImage = `url('${banner}')`;
-    // document.body.appendChild(bannerDiv);
-
-    localStorage.setItem("animeName",englishTitle);
-    console.log(localStorage.getItem("animeName"));
-
-    document.write(`
+    var nativeTitle = data.data.Media.title.native;
+    
+    localStorage.setItem("animeName", englishTitle);
+    
+    const sentenceRecommend = await openAIResponse2(description, englishTitle, reviewSummary);
+    
+    var content = document.getElementById('content');
+    content.innerHTML = `
         <table bgcolor="C0C0C0" style="width: 100%">
             <tr>
-                <td> <a href="index.html"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 100%" class="center"> <center> <h1> AniList 2 </h1></center>
+                <td><a href="index.html"><img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"></a></td>
+                <td style="width: 100%" class="center"><center><h1>Barely Unofficial Bart's AniList 2</h1></center></td>
             </tr>
-        </table>           
-            <br>`);
-
-    document.write(`<img class="padding" src="${banner}" width="100%" height="200px" style="object-fit: cover"> <br>`);
-
-    var nativeTitle = data.data.Media.title.native;
-    const sentenceRecommend = await openAIResponse2(description, englishTitle, reviewSummary);
-    //var reviewSummary = data.data.Media.reviews.nodes.summary;
-
-    document.write(`
-        <div class="padding">
-            <center> <h1> ${englishTitle} </h1> </center>
-           <div class="test" style="background-color: orange; padding: 5px 5px 15px 15px"> <h3> Recommended? </h3> ${sentenceRecommend}  </div>
-            <h3> Titles </h3>
-            Romaji Title: ${romajiTitle} <br>
-            English Title: ${englishTitle} <br>
-            Native Title: ${nativeTitle} <br>
-        </div>
+        </table>
         <br>
-        <div>
-           ${description}
+        <img src="${banner}" width="100%" height="400px" style="object-fit: cover; opacity:0.8;">
+        <br>
+        <div class="padding">
+            <div>
+                <center><b><p style="font-size:300%">${englishTitle}</b></center>
+                <div class="test" style="background-color: orange; padding: 5px 5px 15px 15px"><h3>Recommended?</h3>${sentenceRecommend}</div>
+                <h3>Titles</h3>
+                Romaji Title: ${romajiTitle}<br>
+                English Title: ${englishTitle}<br>
+                Native Title: ${nativeTitle}<br>
+            </div>
+            <br>
+            <div>${description}</div>
+            <h3>Tags</h3>
+            - ${tags}<br><br>
+            <center><h2>Reviews</h2></center>
+            ${data.data.Media.reviews.nodes.map(review => `
+                <p><img src="${review.user.avatar.medium}" style="width: 5%"><a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a></p>
+                <p>Score: <b>${review.score}</b></p>
+                <p>Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name}>${review.summary}</a></p><br>
+            `).join('<br><hr class="solid"><br>')}
+            <center><h2>Recommendations</h2></center>
+            <div id="recommendations"></div>
+            <button id="ai-recommend">Load Recommendations</button>
         </div>
-    `);
-    
-    document.write(" <h3> Tags </h3>");
-    document.write(`- ${tags} <br><br>`);
-
-    document.write(" <center> <h2> Reviews </h2> </center>");
-    var review = data.data.Media.reviews.nodes.map(review => `
-        <p> <img src="${review.user.avatar.medium}" style="width: 5%"> <a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a> <p>
-        <p> Score: <b>${review.score}</b> <p> 
-        <p> Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name}> ${review.summary} </a> </p> <br>
-    `).join('<br><hr class="solid"> <br>');
-    document.write(` ${review} <br> `);
-
-
-
-    document.write("<center> <h2> Recommendations </h2> </center> <div id='recommendations'> </div>");
-
-    document.body.innerHTML += `
-    <button id="ai-recommend">Load Recommendations</button>
     `;
 
     document.getElementById("ai-recommend").addEventListener("click", async function() {
@@ -285,24 +277,22 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
         this.textContent = "Loading recommendations...";
         const openAIRecommender = await openAIResponse(tags, description);
         document.getElementById("recommendations").innerHTML = `Recommendations: ${marked.parse(openAIRecommender)}`;
-            this.textContent = "Done!";
-        });
+        this.textContent = "Done!";
+    });
 
-        document.querySelectorAll('.review').forEach(item => {
-      item.addEventListener('click', event => {
-        var animeId = event.target.closest('.review').getAttribute('data-id');
-        localStorage.setItem("reviewUser", event.target.closest('.review').getAttribute('user'));
-        console.log(animeId);
-        console.log(localStorage.getItem("reviewUser"));
-        window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
-      });
+    document.querySelectorAll('.review').forEach(item => {
+        item.addEventListener('click', event => {
+            var animeId = event.target.closest('.review').getAttribute('data-id');
+            localStorage.setItem("reviewUser", event.target.closest('.review').getAttribute('user'));
+            window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
+        });
     });
 }
 
 fetchData();
 
 function handleError(error) {
-    alert('Error, check console lol');
+    document.getElementById('content').innerHTML = '<p>Error, check console lol</p>';
     console.error(error);
 }
 

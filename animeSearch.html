@@ -13,8 +13,8 @@
         }
 		
 		.padding {
-			padding-left: 10%;
-			padding-right: 10%;
+			padding-left: 25%;
+			padding-right: 25%;
 		}
 		
 		table {
@@ -35,14 +35,41 @@
 
             font-size: large;
         }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .bg {
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .bg::before {
+            opacity: 1;
+            content: "";
+            background-color: rgba(255, 255, 255, 0.5);  /* White background with 50% opacity */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+        }
     </style>
 </head>
 <body >
-
-    <div class="loading">
-        <center> <h1> Loading, please wait... </h1> </center>
-    
+    <div class="bg">
+        <div id="content">
+            <center> <h1> Loading, please wait... </h1> </center>
+        </div>
     </div>
+
 <script>
 
 var query = `
@@ -130,11 +157,11 @@ function handleData(data) {
     // document.write(`<center> <h1> Search (${data.data.Page.pageInfo.total} Results)</h1> </center>`);
 
     
-    document.body.innerHTML = `
+    document.getElementById('content').innerHTML = `
               <table class="padding" bgcolor="C0C0C0" style="width: 100%">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 100%; padding: 0;"> <center><h1 style="margin: 0;"> AniList 2 </h1></center>
+                <td style="width: 100%; padding: 0;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
             </tr>
         </table>
         <center> <h2> Search (${data.data.Page.pageInfo.total} Results)</h2> </center>
@@ -158,10 +185,10 @@ function handleData(data) {
         previousPageButton.type = 'button';
         previousPageButton.id = 'previous-page';
         previousPageButton.innerText = 'Back'; 
-        document.body.appendChild(previousPageButton);
+        document.getElementById('content').appendChild(previousPageButton);
 
         document.getElementById("previous-page").addEventListener("click", function() {
-            document.body.innerHTML = "";
+            document.getElementById('content').innerHTML = "";
             variables.page -= 1;
             //window.location.href = `animeSearch.html?id=${variables.page}`;
             // let url = new URL("http://127.0.0.1:5500/Wesbite/animeSearch.html3243");
@@ -179,10 +206,10 @@ function handleData(data) {
         nextPageButton.type = 'button';
         nextPageButton.id = 'next-page';
         nextPageButton.innerText = 'Next'; 
-        document.body.appendChild(nextPageButton);
+        document.getElementById('content').appendChild(nextPageButton);
 
         document.getElementById("next-page").addEventListener("click", function() {
-            document.body.innerHTML = "";
+            document.getElementById('content').innerHTML = "";
             variables.page += 1;
             //window.location.href = `animeSearch.html?id=${variables.page}`;
             // let url = new URL("http://127.0.0.1:5500/Wesbite/animeSearch.html3243");

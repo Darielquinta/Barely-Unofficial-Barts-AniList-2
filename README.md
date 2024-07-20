@@ -3,7 +3,7 @@
 </p>
 
 # Barely Unofficial Bart's AniList 2 (AKA BuBa 2)
- Available at: www.buba2.co
+ Available at: buba2.co
 
  AniList but good
 
