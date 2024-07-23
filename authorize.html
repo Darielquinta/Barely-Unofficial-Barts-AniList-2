@@ -48,7 +48,7 @@ if(openAIKey === null || openAIKey === "" || openAIKey === undefined) {
 let finalAnswer = "No answer";
 
 var query = `
-query {
+query ($page: Int, $perPage: Int, $userName: String) {
     Viewer {
         name
         about
@@ -79,10 +79,31 @@ query {
             }
         }
     }
+
+    Page (page: $page, perPage: $perPage) {
+        mediaList(userName: $userName, sort: FINISHED_ON_DESC, status_in: COMPLETED, completedAt_greater: 20200500) {
+            media {
+                title {
+                    english
+                    romaji
+                }
+            }
+            status
+            score(format: POINT_100)
+            notes
+            completedAt {
+                year    
+            }
+        }
+    }
 }
 `;
 
-var variables = {};
+    var variables = {
+        userName: "Darielquinta",
+        page: 1,
+        perPage: 5
+    };
 
 function getAccessToken() {
     var hash = window.location.hash.substring(1);
@@ -142,14 +163,14 @@ async function openAIResponse(favoritesTitles) {
                 'Authorization': `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
-                model: "gpt-4o",
+                model: "gpt-4o-mini",
                 messages: [
                     {
                         role: "system",
                         content: "You are an assistant that recommends anime based on the user's favorites. Be as concise as possible, creating a bullet list of 5."
                     },
                     {
-                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}`
+                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}. Provide an AniList ID at the very end of each anime recommendation.`
                     }]
             })
         });

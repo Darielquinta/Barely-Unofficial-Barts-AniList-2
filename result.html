@@ -234,7 +234,16 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
     
     localStorage.setItem("animeName", englishTitle);
     
+    
+    // var sentenceRecommend = sessionStorage.getItem("sentenceRecommend");
+    // if (sentenceRecommend === null || sentenceRecommend === "" || sentenceRecommend === undefined) {
+    //     sentenceRecommend = await openAIResponse2(description, englishTitle, reviewSummary);
+    //     sessionStorage.setItem("sentenceRecommend", sentenceRecommend);
+    // }
+
     const sentenceRecommend = await openAIResponse2(description, englishTitle, reviewSummary);
+    
+
     
     var content = document.getElementById('content');
     content.innerHTML = `
@@ -245,7 +254,7 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
             </tr>
         </table>
         <br>
-        <img src="${banner}" width="100%" height="400px" style="object-fit: cover; opacity:0.8;">
+        <img src="${banner}" width="100%" height="200px" style="object-fit: cover; opacity:0.8;">
         <br>
         <div class="padding">
             <div>
@@ -267,8 +276,9 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
                 <p>Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name}>${review.summary}</a></p><br>
             `).join('<br><hr class="solid"><br>')}
             <center><h2>Recommendations</h2></center>
-            <div id="recommendations"></div>
-            <button id="ai-recommend">Load Recommendations</button>
+            <center> <div id="recommendations">
+            <button id="ai-recommend">Load Recommendations</button> <br>
+            </div> </center> <br>
         </div>
     `;
 

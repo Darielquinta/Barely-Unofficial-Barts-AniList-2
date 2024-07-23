@@ -34,7 +34,7 @@
             background-color: #3CBC8D;
             color: white;
             border: none;
-            padding: 16px 32px;
+            padding: 16px 100px;
             border-radius: 10px;
             font-size: large;
         }
@@ -95,10 +95,10 @@
 <body>
     <div class="bg">
 
-            <table class="padding" bgcolor="C0C0C0" style="width: 100%;">
+            <table bgcolor="C0C0C0" style="width: 100%">
                 <tr>
-                    <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                    <td style="width: 100%; padding: 0;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+                    <td><a href="index.html"><img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"></a></td>
+                    <td style="width: 100%; padding: 20px;" class="center"><center><h1>Barely Unofficial Bart's AniList 2</h1></center></td>
                 </tr>
             </table>
             <div id="content">
@@ -134,7 +134,7 @@ function addKeyword() {
     if (input !== "") {
         keywords.push(input);
         console.log(keywords);
-        document.getElementById('content').innerHTML += `- ${input} <br>`;
+        document.getElementById('content').innerHTML += `<h3> - ${input} </h3>`;
     }
 
 
