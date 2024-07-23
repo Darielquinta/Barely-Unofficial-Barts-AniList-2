@@ -156,6 +156,7 @@ function changeBackgroundImage(newBackground) {
         }
     `;
     styleElement.innerHTML = newStyle;
+    console.log(newStyle);
 }
 
 
@@ -204,7 +205,9 @@ var bgImages = [
     'backgrounds/adv_bg_41.jpg'
 ]
 
-var randomBackground = Math.floor(Math.random() * bgImages.length) - 1;
+var randomBackground = Math.floor(Math.random() * bgImages.length);
+console.log(randomBackground);
+
 
 changeBackgroundImage(bgImages[randomBackground]);
 </script>

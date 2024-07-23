@@ -170,7 +170,8 @@ async function openAIResponse(favoritesTitles) {
                         content: "You are an assistant that recommends anime based on the user's favorites. Be as concise as possible, creating a bullet list of 5."
                     },
                     {
-                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}. Provide an AniList ID at the very end of each anime recommendation.`
+                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}.`,
+                        
                     }]
             })
         });
