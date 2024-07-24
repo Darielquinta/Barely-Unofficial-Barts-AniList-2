@@ -25,16 +25,25 @@
             width: 100%;
 		}
 
-        
         #content {
             padding-left: 25%;
 			padding-right: 25%;
         }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
     </style>
 </head>
-<body >
+<body>
+    <div id="header"></div>
 
-    <div class="loading">
+    <div id="content">
         <center> <h1> Loading, please wait... </h1> </center>
     
     </div>
@@ -54,6 +63,7 @@ query ($page: Int, $perPage: Int, $userName: String) {
         about
         avatar {
             medium
+            large
         }
         bannerImage
         favourites {
@@ -81,8 +91,18 @@ query ($page: Int, $perPage: Int, $userName: String) {
     }
 
     Page (page: $page, perPage: $perPage) {
-        mediaList(userName: $userName, sort: FINISHED_ON_DESC, status_in: COMPLETED, completedAt_greater: 20200500) {
+        pageInfo {
+            total
+            perPage
+            hasNextPage
+        }
+        mediaList(type: ANIME, userName: $userName, sort: FINISHED_ON_DESC, status_in: COMPLETED) {
             media {
+                id
+                coverImage {
+                    medium
+                    large
+                }
                 title {
                     english
                     romaji
@@ -98,11 +118,11 @@ query ($page: Int, $perPage: Int, $userName: String) {
     }
 }
 `;
-
+// mediaList  completedAt_greater: 20200500
     var variables = {
         userName: "Darielquinta",
         page: 1,
-        perPage: 5
+        perPage: 100
     };
 
 function getAccessToken() {
@@ -111,39 +131,60 @@ function getAccessToken() {
     return params.get('access_token');
 }
 
-
-
 var accessToken = getAccessToken();
 localStorage.setItem("accessToken", accessToken);
-console.log(localStorage.getItem("accessToken"));
+// console.log(localStorage.getItem("accessToken"));
 
 async function fetchData() {
-    var options = {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + accessToken,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query,
-            variables: variables
-        })
-    };
+    var allMediaList = [];
+    var hasNextPage = true;
+    var currentPage = 1;
+    var viewerData = null;
 
-    try {
-        const response = await fetch('https://graphql.anilist.co', options);
-        const json = await handleResponse(response);
+    while(hasNextPage) {
+        variables.page = currentPage;
 
-        const favoritesTitles = json.data.Viewer.favourites.anime.nodes.map(anime => `
+        var options = {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                variables: variables
+            })
+        };
+
+        try {
+            const response = await fetch('https://graphql.anilist.co', options);
+            const json = await handleResponse(response);
+            
+            allMediaList = allMediaList.concat(json.data.Page.mediaList);
+            hasNextPage = json.data.Page.pageInfo.hasNextPage;
+            currentPage++;
+
+            if(!viewerData) {
+                viewerData = json.data.Viewer;
+            }
+        } catch (error) {
+            handleError(error);
+            break;
+        }
+    }
+
+    const favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `
     ${anime.title.english}
     `).join('<br> ');
-    
-        const openAIDescription = await openAIResponse(favoritesTitles);
-        handleData(json, openAIDescription, favoritesTitles);
-    } catch (error) {
-        handleError(error);
-    }
+
+    handleData({ 
+        data: { 
+            Page: { mediaList: allMediaList },
+            Viewer: viewerData
+        } 
+    }, null, favoritesTitles);
+
 }
 
 function handleResponse(response) {
@@ -167,7 +208,7 @@ async function openAIResponse(favoritesTitles) {
                 messages: [
                     {
                         role: "system",
-                        content: "You are an assistant that recommends anime based on the user's favorites. Be as concise as possible, creating a bullet list of 5."
+                        content: "You are an assistant that recommends anime based on the user's favorites. Be as concise as possible, creating a bullet list of 5. You must use marked markdown features."
                     },
                     {
                         role: "user", content: `Here are my favorite anime: ${favoritesTitles}.`,
@@ -186,29 +227,47 @@ async function openAIResponse(favoritesTitles) {
 }
 
 function handleData(data, openAIDescription, favoritesTitles) {
-    console.log(data.data.Viewer.statistics.anime.statuses.status);
+    console.log(data);
+    // console.log(data.data.Page.mediaList.map(item => `${item.media.title.romaji}`).join('<br> <br> <hr class="solid">'));
+
+    //console.log(data.data.Viewer.statistics.anime.statuses.status);
     //        const favoritesTitles = json.data.Viewer.favourites.anime.nodes.map(anime => `${anime.title.english}`).join('<br> ');
-    var animeScores = data.data.Viewer.statistics.anime.scores.map(score => ` Score: ${score.score}`).join('<br> ');
-    var animeStatus = data.data.Viewer.statistics.anime.statuses.map(status => ` Status: ${status}`).join('<br> ');
-    document.body.innerHTML = `
-        <table class="padding" bgcolor="C0C0C0" style="width: 100%">
+    var animeList = data.data.Page.mediaList.map(item => `<img src="${item.media.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
+        
+    var animeNames = localStorage.getItem("animeList");
+
+    if (animeNames === null || animeNames === "" || animeNames === undefined) {
+        animeNames = data.data.Page.mediaList.map(item => `="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
+        localStorage.setItem("animeList", animeNames);
+    }
+
+
+
+
+
+
+    document.getElementById('header').innerHTML = `
+            <table class="padding" bgcolor="C0C0C0" style="width: 100%">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 100%; padding: 0;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
             </tr>
         </table>
+        <img src=${data.data.Viewer.bannerImage} width=100%>`;
         
+    document.getElementById('content').innerHTML = `
 
-        <img src=${data.data.Viewer.bannerImage} width=100%>
-        <center> <h2> Authorized! Welcome back ${data.data.Viewer.name}! </h2> </center> <br>
-        <center> <img src="${data.data.Viewer.avatar.medium}" style="height: 50%;"> </center> <br>
+        <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
+        <center> <img src="${data.data.Viewer.avatar.large}" style="height: 50%;"> </center> <br>
         <p> About me: ${marked.parse(data.data.Viewer.about)} </p> <br>
         <p> Favorites: <br> ${favoritesTitles} </p> <br>
-        <p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
+        <center> <h3> Completed Anime List: </h3> </center><br> ${animeList}
+        // 
         
         <br> <br>`;
-
-    console.log(getAccessToken());
+    // console.log(animeList);
+    //console.log(getAccessToken());
+    //<p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
 
     localStorage.setItem("favoritesTitles", favoritesTitles);
     console.log(localStorage.getItem("favoritesTitles"));

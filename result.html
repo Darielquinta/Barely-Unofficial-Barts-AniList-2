@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="style.css">
     <style>
         hr.solid {
             border-top: 3px solid #bbb;
@@ -50,7 +49,27 @@
             background-size: cover;
             background-attachment: fixed;
         }
-        
+
+        .bg {
+            position: relative;
+        }
+
+        .bg::before {
+
+            content: "";
+            background-image: url('backgrounds/adv_bg_28.jpg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size:cover;
+            opacity: 0.5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+        }
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -166,7 +185,7 @@ async function openAIResponse(tags, description) {
                 'Authorization': `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
-                model: "gpt-4o",
+                model: "gpt-4o-mini",
                 messages: [
                     {
                         role: "system",
@@ -183,7 +202,7 @@ async function openAIResponse(tags, description) {
         return data.choices[0].message.content;
     } catch (error) {
         console.error('Error:', error);
-        return "An error occurred while fetching the response.";
+        return `Your OpenAI key was incorrect. Please go to the official <a href="https://platform.openai.com/api-keys"> OpenAI API webpage.</a>`;
     }
 }
 
@@ -217,7 +236,7 @@ async function openAIResponse2(description, englishTitle, reviewSummary) {
         return data.choices[0].message.content;
     } catch (error) {
         console.error('Error:', error);
-        return "An error occurred while fetching the response.";
+        return `Your OpenAI key was incorrect. Please go to the official <a href="https://platform.openai.com/api-keys"> OpenAI API webpage.</a>`;
     }
 }
 
@@ -302,10 +321,36 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
 fetchData();
 
 function handleError(error) {
-    document.getElementById('content').innerHTML = '<p>Error, check console lol</p>';
-    console.error(error);
-}
+    document.getElementById('content').innerHTML = `<div 
+        style="
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        padding-left: 5%;
+		padding-right: 5%;
+        "> 
 
+        <br> <center> <h1> Important! <br> You are not authenticated with AniList. <br> <br> Please authenticate here: </h1>
+        <a href="https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token">
+        
+        <input type="button" value="Login with AniList" style="
+            background-color: rgb(34, 65, 206);            
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: large;"> 
+        </a> 
+        </center> </div>`;
+    // console.error(error);
+}
 </script>
 
 </body>
