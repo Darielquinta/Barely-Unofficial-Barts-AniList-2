@@ -285,17 +285,18 @@ async function openAIResponse(favoritesTitles) {
                 messages: [
                     {
                         role: "system",
-                        content: "You are an assistant that recommends anime based on the user's favorites. Be as concise as possible, creating a bullet list of 5. Make sure the title is exact. They should be the exact AniList names. English titles only. Put the anime names between two asterisks."
+                        content: "You are an assistant that recommends anime based on the user's favorites and completed anime list. Make sure NONE of your recommendations are in the completed anime list. Be as concise as possible, creating a bullet list of 5. Make sure the title is exact. They should be the exact AniList names. English titles only. Put the anime names between two asterisks."
                     },
                     {
-                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}.`,
+                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}. Here is my completed anime list: ${localStorage.getItem("animeList")}. Don't include any of these in your recommendation.`,
                         
                     }]
             })
         });
 
         var data = await response.json();
-        //console.log(data.choices[0].message.content);  // Log the actual response content
+        console.log(data.choices[0].message.content);  // Log the actual response content
+        console.log(localStorage.getItem("animeList"));
         var extractedRecommendations = await extractText(data.choices[0].message.content);
         //console.log(`Recommendations (only titles): ${extractedRecommendations}`);
         return data.choices[0].message.content;
@@ -318,9 +319,12 @@ function handleData(data, openAIDescription, favoritesTitles, extractedTitles) {
     var animeNames = localStorage.getItem("animeList");
 
     if (animeNames === null || animeNames === "" || animeNames === undefined) {
-        animeNames = data.data.Page.mediaList.map(item => `="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
+        animeNames = data.data.Page.mediaList.map(item => `<img src="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
         localStorage.setItem("animeList", animeNames);
     }
+
+    animeListTitles = data.data.Page.mediaList.map(item => `${item.media.title.romaji} Score: ${item.score}`).join(', ');
+    localStorage.setItem("animeList", animeListTitles);
 
 
 
