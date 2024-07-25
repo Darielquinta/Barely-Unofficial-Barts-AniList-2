@@ -57,7 +57,7 @@
         .bg::before {
 
             content: "";
-            background-image: url('backgrounds/adv_bg_28.jpg');
+
             background-repeat: no-repeat;
             background-position: center;
             background-size:cover;
@@ -78,7 +78,7 @@
 <body>
     <div class="bg">
         <div id="content">
-            <center> <h1> Loading, please wait... </h1> </center>
+            <center> <h1> Loading, please wait... </h1> </center> 
         </div>
     </div>
 
@@ -202,8 +202,14 @@ async function openAIResponse(tags, description) {
         return data.choices[0].message.content;
     } catch (error) {
         console.error('Error:', error);
-        return `Your OpenAI key was incorrect. Please go to the official <a href="https://platform.openai.com/api-keys"> OpenAI API webpage.</a>`;
+        return `Your OpenAI key is incorrect. Please go to the official <a href="https://platform.openai.com/api-keys"> OpenAI webpage to get an API key. </a><br> <br><center><input type=button value="Click here to re-enter your API key." onClick="promptAPI();" /> </center>`;
     }
+}
+
+function promptAPI() {
+    openAIKey = prompt("Provide your OpenAI key here: ");
+    localStorage.setItem("openAIKey", openAIKey);
+    location.reload();
 }
 
 async function openAIResponse2(description, englishTitle, reviewSummary) {
@@ -235,8 +241,9 @@ async function openAIResponse2(description, englishTitle, reviewSummary) {
         var data = await response.json();
         return data.choices[0].message.content;
     } catch (error) {
+
         console.error('Error:', error);
-        return `Your OpenAI key was incorrect. Please go to the official <a href="https://platform.openai.com/api-keys"> OpenAI API webpage.</a>`;
+        return `Your OpenAI key is incorrect. Please go to the official <a href="https://platform.openai.com/api-keys"> OpenAI webpage to get an API key. </a><br> <br><center><input type=button value="Click here to re-enter your API key." onClick="promptAPI();" /> </center>`;
     }
 }
 
@@ -278,7 +285,7 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
         <div class="padding">
             <div>
                 <center><b><p style="font-size:300%">${englishTitle}</b></center>
-                <div class="test" style="background-color: orange; padding: 5px 5px 15px 15px"><h3>Recommended?</h3>${sentenceRecommend}</div>
+                <div class="test" style="background-color: orange; padding: 5px 5px 15px 15px"><center><h3>Recommended?</h3></center>${sentenceRecommend}</div>
                 <h3>Titles</h3>
                 Romaji Title: ${romajiTitle}<br>
                 English Title: ${englishTitle}<br>
