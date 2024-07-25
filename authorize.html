@@ -190,23 +190,21 @@ async function extractText(openAIDescription) {
 
     if (matches) {
         const extractedTitles = matches.map(match => match.replace(/^\*\*|\*\*$/g, '*').trim());
-        
-        for(var i = 0; i < extractedTitles.length; i++) {
+        const finalTitles = [];
+
+        for (var i = 0; i < extractedTitles.length; i++) {
             var id = await getAnimeId(extractedTitles[i]);
-            // console.log(id.id);
-            extractedTitles[i] = `<img src="${id.coverImage}" style="width: 50px" /> <a href="result.html?id=${id.id}" /> ${id.title} </a>`;
-            // console.log(extractedTitles[i]);
-            
+            if (id) {
+                finalTitles.push(`<img src="${id.coverImage}" style="width: 50px" /> <a href="result.html?id=${id.id}" /> ${id.title} </a>`);
+            }
         }
 
-        // const finalTitles = extractedTitles.map(extractedTitles => extractedTitles.replace(/\*(.*?)\*/g, `<a href="review.html?id=${id}" />`).trim());
-        //console.log(`Final anime: ${extractedTitles}`);
-        //document.body.innerHTML += extractedTitles.join(`<br> `);
-        return extractedTitles;
+        return finalTitles.length > 0 ? finalTitles : ["No recommendations found."];
     } else {
-        return "No recommendations found.";
+        return ["No recommendations found."];
     }
 }
+
 
 async function fetchData() {
     var allMediaList = [];
@@ -324,7 +322,7 @@ function handleData(data, openAIDescription, favoritesTitles, extractedTitles) {
     }
 
     animeListTitles = data.data.Page.mediaList.map(item => `${item.media.title.romaji} Score: ${item.score}`).join(', ');
-    localStorage.setItem("animeList", animeListTitles);
+    localStorage.setItem("animeListTitles", animeListTitles);
 
 
 
