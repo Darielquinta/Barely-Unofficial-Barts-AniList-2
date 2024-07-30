@@ -185,23 +185,34 @@ async function getAnimeId(animeName) {
 };
 
 async function extractText(openAIDescription) {
-    var pattern = /\*\*(.*?)\*\*/g; 
-    var matches = openAIDescription.match(pattern);
+    var lines = openAIDescription.split('\n');
+    var extractedTitles = lines
+        .filter(line => line.trim().startsWith('- *') && line.trim().endsWith('*'))
+        .map(line => line.trim().replace(/^- \*|\*$/g, ''));
 
-    if (matches) {
-        const extractedTitles = matches.map(match => match.replace(/^\*\*|\*\*$/g, '*').trim());
+    if (extractedTitles.length > 0) {
         const finalTitles = [];
 
         for (var i = 0; i < extractedTitles.length; i++) {
-            var id = await getAnimeId(extractedTitles[i]);
-            if (id) {
-                finalTitles.push(`<img src="${id.coverImage}" style="width: 50px" /> <a href="result.html?id=${id.id}" /> ${id.title} </a>`);
+            try {
+                var id = await getAnimeId(extractedTitles[i]);
+                if (id) {
+                    finalTitles.push(`<img src="${id.coverImage}" style="width: 50px" /> <a href="result.html?id=${id.id}">${id.title}</a>`);
+                } else {
+                    // If getAnimeId returns null, display the original title
+                    finalTitles.push(extractedTitles[i]);
+                }
+            } catch (error) {
+                console.error(`Error fetching anime ID for "${extractedTitles[i]}":`, error);
+                // If there's an error, display the original title
+                finalTitles.push(extractedTitles[i]);
             }
         }
+        console.log("Titles extracted:", extractedTitles);
 
         return finalTitles.length > 0 ? finalTitles : ["No recommendations found."];
     } else {
-        return ["No recommendations found."];
+        return ["No recommendations found lol"];
     }
 }
 
@@ -287,17 +298,14 @@ async function openAIResponse(favorites) {
                         content: "You are an assistant that recommends anime based on the user's favorites and completed anime list. Make sure NONE of your recommendations are in the completed anime list. Be as concise as possible, creating a bullet list of 5. Make sure the title is exact. They should be the exact AniList names. English titles only. Put the anime names between two asterisks."
                     },
                     {
-                        role: "user", content: `Here are my favorite anime: ${favorites}. Here is my completed anime list: ${localStorage.getItem("animeList")}. Don't include any of these in your recommendation.`,
-                        
+                        role: "user", content: `Here are my favorite anime: ${favorites}. Here is my completed anime list: ${localStorage.getItem("animeListTitles")}. Don't include any of these in your recommendation.`,  
                     }]
             })
         });
 
         var data = await response.json();
         console.log(data.choices[0].message.content);  // Log the actual response content
-        console.log(localStorage.getItem("animeList"));
         var extractedRecommendations = await extractText(data.choices[0].message.content);
-        //console.log(`Recommendations (only titles): ${extractedRecommendations}`);
         return data.choices[0].message.content;
 
     } catch (error) {
@@ -362,8 +370,36 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
 //<p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
 
 function handleError(error) {
-    window.location.href = "https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token";
-    alert('Error, check console lol');
+    document.getElementById('content').innerHTML = `<div 
+        style="
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        padding-left: 5%;
+		padding-right: 5%;
+        "> 
+
+        <br> <center> <h1> Important! <br> You are not authenticated with AniList. <br> <br> Please authenticate here: </h1>
+        <a href="https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token">
+        
+        <input type="button" value="Login with AniList" style="
+            background-color: rgb(34, 65, 206);            
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: large;"> 
+        </a> <br> <br>
+
+        <br> <center> <h3> Note! <br> If clicking the button doesn't work, then you have been rate limited by AniList. Please wait one minute and it should work. If it still doesn't work, contact <a href="https://anilist.co/user/Darielquinta/"> me here. </a></h3>
+        </center> </div>`;
     console.error(error);
 }
 
