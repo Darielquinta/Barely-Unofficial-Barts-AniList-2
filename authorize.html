@@ -247,18 +247,19 @@ async function fetchData() {
 
     
 
-    const favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `
+    const favorites = viewerData.favourites.anime.nodes.map(anime => `
     ${anime.title.english}
     `).join('<br> ');
+    var favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `${anime.title.english}`).join(', ');
 
-    const openAIDescription = await openAIResponse(favoritesTitles);
+    const openAIDescription = await openAIResponse(favorites);
     const extractedTitles = await extractText(openAIDescription);
     handleData({ 
         data: { 
             Page: { mediaList: allMediaList },
             Viewer: viewerData
         } 
-    }, openAIDescription, favoritesTitles, extractedTitles);
+    }, openAIDescription, favorites, favoritesTitles, extractedTitles);
 
 }
 
@@ -268,7 +269,7 @@ function handleResponse(response) {
     });
 }
 
-async function openAIResponse(favoritesTitles) {
+async function openAIResponse(favorites) {
     var API_KEY = localStorage.getItem("openAIKey");
 
     try {
@@ -286,7 +287,7 @@ async function openAIResponse(favoritesTitles) {
                         content: "You are an assistant that recommends anime based on the user's favorites and completed anime list. Make sure NONE of your recommendations are in the completed anime list. Be as concise as possible, creating a bullet list of 5. Make sure the title is exact. They should be the exact AniList names. English titles only. Put the anime names between two asterisks."
                     },
                     {
-                        role: "user", content: `Here are my favorite anime: ${favoritesTitles}. Here is my completed anime list: ${localStorage.getItem("animeList")}. Don't include any of these in your recommendation.`,
+                        role: "user", content: `Here are my favorite anime: ${favorites}. Here is my completed anime list: ${localStorage.getItem("animeList")}. Don't include any of these in your recommendation.`,
                         
                     }]
             })
@@ -306,12 +307,11 @@ async function openAIResponse(favoritesTitles) {
 }
 
 
-function handleData(data, openAIDescription, favoritesTitles, extractedTitles) {
+function handleData(data, openAIDescription, favorites, favoritesTitles, extractedTitles) {
     console.log(data);
     // console.log(data.data.Page.mediaList.map(item => `${item.media.title.romaji}`).join('<br> <br> <hr class="solid">'));
 
     //console.log(data.data.Viewer.statistics.anime.statuses.status);
-    //        const favoritesTitles = json.data.Viewer.favourites.anime.nodes.map(anime => `${anime.title.english}`).join('<br> ');
     var animeList = data.data.Page.mediaList.map(item => `<img src="${item.media.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
         
     var animeNames = localStorage.getItem("animeList");
@@ -344,7 +344,7 @@ function handleData(data, openAIDescription, favoritesTitles, extractedTitles) {
         <center> <img src="${data.data.Viewer.avatar.large}" style="height: 50%;"> </center> <br>
         <center> <h2> About Me: </h2> </center> ${marked.parse(data.data.Viewer.about)} <br>
         <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br>`)}  <br> 
-        <center> <h2> Favorites: </h2> </center> <br> ${favoritesTitles} <br>
+        <center> <h2> Favorites: </h2> </center> <br> ${favorites} <br>
         <center> <h2> Completed Anime List: </h2> </center><br> ${animeList}
 
         
