@@ -38,11 +38,17 @@
             background-size: cover;
             background-attachment: fixed;
         }
+
+        #header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div id="header"></div>
-
+    <div id="banner"></div>
     <div id="content">
         <center> <h1> Loading, please wait... </h1> </center>
     
@@ -69,6 +75,9 @@ query ($page: Int, $perPage: Int, $userName: String) {
         favourites {
             anime {
                 nodes {
+                coverImage {
+                    medium
+                }
                     id
                     title {
                         english
@@ -118,6 +127,7 @@ query ($page: Int, $perPage: Int, $userName: String) {
     }
 }
 `;
+
 // mediaList  completedAt_greater: 20200500
     var variables = {
         userName: "Darielquinta",
@@ -204,8 +214,7 @@ async function extractText(openAIDescription) {
                 }
             } catch (error) {
                 console.error(`Error fetching anime ID for "${extractedTitles[i]}":`, error);
-                // If there's an error, display the original title
-                finalTitles.push(extractedTitles[i]);
+                finalTitles.push(`<br> ${extractedTitles[i]}`);
             }
         }
         console.log("Titles extracted:", extractedTitles);
@@ -258,10 +267,10 @@ async function fetchData() {
 
     
 
-    const favorites = viewerData.favourites.anime.nodes.map(anime => `
-    ${anime.title.english}
-    `).join('<br> ');
-    var favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `${anime.title.english}`).join(', ');
+    const favorites = viewerData.favourites.anime.nodes.map(anime => `<img src="${anime.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${anime.id}">${anime.title.english}</a>`).join('<br> ');
+    var favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `${anime.title.english}`).join(' ');
+
+
 
     const openAIDescription = await openAIResponse(favorites);
     const extractedTitles = await extractText(openAIDescription);
@@ -325,7 +334,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
     var animeNames = localStorage.getItem("animeList");
 
     if (animeNames === null || animeNames === "" || animeNames === undefined) {
-        animeNames = data.data.Page.mediaList.map(item => `<img src="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
+        animeNames = data.data.Page.mediaList.map(item => `<a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
         localStorage.setItem("animeList", animeNames);
     }
 
@@ -337,22 +346,29 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
 
 
 
+    
+
     document.getElementById('header').innerHTML = `
-            <table class="padding" bgcolor="C0C0C0" style="width: 100%">
+        <table class="padding" bgcolor="C0C0C0" style="width: 100%">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
                 <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
             </tr>
-        </table>
-        <img src=${data.data.Viewer.bannerImage} width=100%>`;
-        
-    document.getElementById('content').innerHTML = `
+        </table>`;
 
+    document.getElementById('banner').innerHTML = `
+        //`;
+    
+    document.getElementById('content').innerHTML = `
+        <img src=${data.data.Viewer.bannerImage} width=100%>
         <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
         <center> <img src="${data.data.Viewer.avatar.large}" style="height: 50%;"> </center> <br>
         <center> <h2> About Me: </h2> </center> ${marked.parse(data.data.Viewer.about)} <br>
-        <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br>`)}  <br> 
-        <center> <h2> Favorites: </h2> </center> <br> ${favorites} <br>
+        <hr class="solid" style="border-top: 3px solid #bbb;">
+        <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br>`)}  <br> <br>
+        <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
+        <center> <h2> Favorites: </h2> </center> <br> ${favorites}
+        <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
         <center> <h2> Completed Anime List: </h2> </center><br> ${animeList}
 
         
@@ -398,7 +414,7 @@ function handleError(error) {
             font-size: large;"> 
         </a> <br> <br>
 
-        <br> <center> <h3> Note! <br> If clicking the button doesn't work, then you have been rate limited by AniList. Please wait one minute and it should work. If it still doesn't work, contact <a href="https://anilist.co/user/Darielquinta/"> me here. </a></h3>
+        <br> <center> <h3> Note! <br> If clicking the button doesn't work, then you have may been rate limited by AniList. Please wait one minute and it should work. If it still doesn't work, contact <a href="https://anilist.co/user/Darielquinta/"> me here. </a></h3>
         </center> </div>`;
     console.error(error);
 }
