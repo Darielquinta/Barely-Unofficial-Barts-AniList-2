@@ -329,7 +329,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
     // console.log(data.data.Page.mediaList.map(item => `${item.media.title.romaji}`).join('<br> <br> <hr class="solid">'));
 
     //console.log(data.data.Viewer.statistics.anime.statuses.status);
-    var animeList = data.data.Page.mediaList.map(item => `<img src="${item.media.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
+    var animeList = data.data.Page.mediaList.map(item => `<img src="${item.media.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr style="border-top: 3px dashed #bbb;"> <br>');
         
     var animeNames = localStorage.getItem("animeList");
 
@@ -349,7 +349,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
     
 
     document.getElementById('header').innerHTML = `
-        <table class="padding" bgcolor="C0C0C0" style="width: 100%">
+        <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
                 <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
@@ -357,10 +357,16 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
         </table>`;
 
     document.getElementById('banner').innerHTML = `
-        //`;
+                <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
+            <tr>
+                <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
+                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+            </tr>
+        </table>
+        <img src=${data.data.Viewer.bannerImage} width=100% style="">`;
     
     document.getElementById('content').innerHTML = `
-        <img src=${data.data.Viewer.bannerImage} width=100%>
+
         <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
         <center> <img src="${data.data.Viewer.avatar.large}" style="height: 50%;"> </center> <br>
         <center> <h2> About Me: </h2> </center> ${marked.parse(data.data.Viewer.about)} <br>
