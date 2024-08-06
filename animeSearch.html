@@ -109,9 +109,21 @@ var variables = {
     perPage: 10
 };
 
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    if (pageParam) {
+        variables.page = parseInt(pageParam);
+    }
+    fetchData();
+});
+
 console.log(localStorage.getItem("searchQuery"));
 
 function fetchData() {
+
+    history.pushState(null, '', `animeSearch.html?page=${variables.page}`);
+    
     // Define the config we'll need for our Api request
     var options = {
         method: 'POST',
@@ -190,18 +202,12 @@ function handleData(data) {
         document.getElementById("previous-page").addEventListener("click", function() {
             document.getElementById('content').innerHTML = "";
             variables.page -= 1;
-            //window.location.href = `animeSearch.html?id=${variables.page}`;
-            // let url = new URL("http://127.0.0.1:5500/Wesbite/animeSearch.html3243");
-            // let params = new URLSearchParams(url.search);
             console.log(variables.page);
             fetchData();
-            // url.searchParams.append(`page`, `variables.page`);
         });
     }
         
     if(data.data.Page.pageInfo.hasNextPage) {
-
-
         var nextPageButton = document.createElement('button');
         nextPageButton.type = 'button';
         nextPageButton.id = 'next-page';
@@ -211,12 +217,8 @@ function handleData(data) {
         document.getElementById("next-page").addEventListener("click", function() {
             document.getElementById('content').innerHTML = "";
             variables.page += 1;
-            //window.location.href = `animeSearch.html?id=${variables.page}`;
-            // let url = new URL("http://127.0.0.1:5500/Wesbite/animeSearch.html3243");
-            // let params = new URLSearchParams(url.search);
             console.log(variables.page);
             fetchData();
-            // url.searchParams.append(`page`, `variables.page`);
         });
 
 
