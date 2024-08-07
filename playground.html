@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head> </head>
+    <body>
+    <script>
+        query = `
+        query ($id: Int, $userName: String, $chunk: Int, $perChunk: Int) {
+            Media (id: $id, type: ANIME) {
+                id
+                title {
+                romaji
+                english
+                native
+                }
+            }
+            
+            MediaListCollection(userName: $userName, type: ANIME, chunk: $chunk, perChunk: $perChunk) {
+                lists {
+                    entries {
+                        media {
+                            title {
+                                english
+                                native
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        `;
+
+        // Define our query variables and values that will be used in the query request
+        var variables = {
+            id: 15125,
+            userName: "Darielquinta",
+            chunk: 1,
+            perChunk: 10
+        };
+
+        // Define the config we'll need for our Api request
+        var url = 'https://graphql.anilist.co',
+            options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    variables: variables
+                })
+            };
+
+        // Make the HTTP Api request
+        fetch(url, options).then(handleResponse)
+                        .then(handleData)
+                        .catch(handleError);
+
+        function handleResponse(response) {
+            return response.json().then(function (json) {
+                return response.ok ? json : Promise.reject(json);
+            });
+        }
+
+        function handleData(data) {
+            console.log(data);
+            document.write(data.data.MediaListCollection.lists
+                .flatMap(list => list.entries)
+                .map(entry => `${entry.media.title.english || entry.media.title.native}`)
+            .join('<br>'));
+        }
+
+//         function handleData(data) {
+//     console.log(data);
+//     if (data.data && data.data.MediaListCollection && data.data.MediaListCollection.lists) {
+//         document.write(
+//             data.data.MediaListCollection.lists
+//                 .flatMap(list => list.entries)
+//                 .map(entry => `${entry.media.title.english || 'No English Title'}`)
+//                 .join('<br>')
+//         );
+//     } else {
+//         console.error('Unexpected data structure:', data);
+//         document.write('Error: Unexpected data structure. Check console for details.');
+//     }
+// }
+
+        function handleError(error) {
+            alert('Error, check console');
+            console.error(error);
+        }
+    </script>
+    </body>
+</html>
