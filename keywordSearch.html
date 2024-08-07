@@ -61,7 +61,6 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url('backgrounds/adv_bg_5.jpg');
             background-repeat: no-repeat;
             background-position: center;
             background-size: cover;
@@ -70,7 +69,6 @@
 
         .bg {
             position: relative;
-            min-height: 100vh;
         }
 
         .bg::before {
@@ -90,36 +88,48 @@
 			padding-right: 25%;
         }
 
+        #header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
 
     </style>
 </head>
 <body>
-    <div class="bg">
-
+    <div id="header"> 
         <table bgcolor="C0C0C0" style="width: 100%">
             <tr>
                 <td><a href="index.html"><img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"></a></td>
                 <td style="width: 100%" class="center"><center><h1>Barely Unofficial Bart's AniList 2</h1></center></td>
             </tr>
         </table>
-            <div id="content">
-            <br>
-            <br>
-            <br>
-            <center> 
+    </div>
+
+    <table class="padding" bgcolor="C0C0C0" style="width: 100%">
+        <tr>
+            <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
+            <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 test </h1></center>
+        </tr>
+    </table>
+
+    <div id="content">
+
+        <center> 
             <h1> Tags: </h1> 
             <h2> (Type in any tags here, then click submit) </h2><br>
-                <form id="form"> 
-                    <input type="text" id="keyword"/> <br>
-                    <input type="submit" onclick="addKeyword()" value="Search" id="submitKeyword" />
-                    <br>
-                    <br>
-                    <br>
-                    <input type="button" onclick="submitTags()" value="Submit" />
-                </form>
-            </center>
-        </div>
+            <form id="form"> 
+                <input type="text" id="keyword"/> <br>
+                <input type="submit" onclick="addKeyword()" value="Search" id="submitKeyword" />
+                <br>
+                <br>
+                <br>
+                <input type="button" onclick="submitTags()" value="Submit" />
+            </form>
+        </center>
     </div>
+
+
 <script>
 
 var keywords = [];
@@ -252,7 +262,7 @@ function handleResponse(response) {
 }
 
 async function handleData() {
-    
+
     console.log(`Current keywords: ${keywords.join(', ')}`)
     const anime = await openAIResponse(keywords.join(", "));
     var animeID = await getAnimeId(anime);

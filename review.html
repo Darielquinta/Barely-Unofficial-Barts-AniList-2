@@ -8,13 +8,20 @@
         border-top: 3px solid #bbb;
     }
 
+    .padding {
+			padding-left: 25%;
+			padding-right: 25%;
+		}
+
+    table {
+			border-collapse: collapse;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+	}
+
     .review {
         text-wrap: wrap;
-    }
-
-    #content {
-            padding-left: 25%;
-			padding-right: 25%;
     }
 
     body {
@@ -24,11 +31,10 @@
         background-position: center;
         background-size: cover;
         background-attachment: fixed;
+        color: black;
+        font-family: Verdana;
     }
 
-    img {
-        object-fit: contain;
-    }
 
     #deyap {
             background-color: #3c5ebc;
@@ -37,7 +43,31 @@
             padding: 8px 32px;
             border-radius: 10px;
             font-size: large;
+    }
+
+    .bg {
+            position: relative;
+            min-height: 100vh;
         }
+
+    .bg::before {
+            opacity: 1;
+            content: "";
+            background-color: rgba(255, 255, 255, 0.5);  /* White background with 50% opacity */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+    }
+
+    #header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+    }
+
     </style>
 </head>
 
@@ -181,25 +211,32 @@ async function openAIResponse(reviewText) {
 
 function handleData(data, selectedReview) {
     console.log(selectedReview);
-    document.getElementById('header').innerHTML += `
-        <table bgcolor="C0C0C0" style="width: 100%">
+    document.getElementById('header').innerHTML = `
+        <table class="padding" bgcolor="C0C0C0" style="width: 100%">
             <tr>
-                <td><a href="index.html"><img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"></a></td>
-                <td style="width: 100%" class="center"><center><h1>Barely Unofficial Bart's AniList 2</h1></center></td>
+                <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
+                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
             </tr>
-        </table>
-        <br>
-        <img src="${data.data.Media.bannerImage || data.data.Media.coverImage.large}" width="100%" height="200px" style="object-fit: cover; opacity:0.8;"> <br>
-    `;
+        </table>`;
 
     if(selectedReview) {
         document.getElementById('content').innerHTML += `
-         <p> <a href="https://anilist.co/user/${selectedReview.user.name}"> <img src="${selectedReview.user.avatar.medium}" style="width: 100px"> ${selectedReview.user.name}</a> </p>
-        <center> <h3> Score: ${selectedReview.score}</h3> </center>
-        <center> <button id="deyap">De-yapper</button> </center> <br>
-        <center><h2>${selectedReview.summary} </h2> </center>
-        <hr style="border-top: 3px dashed #bbb;">
-        <div id="reviewContent" class="review"><center><h3> Review: </h3> <center> ${marked.parse(selectedReview.body)}</div>
+            <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
+            <tr>
+                <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
+                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+            </tr>
+        </table>
+        <br>
+        <img src="${data.data.Media.bannerImage || data.data.Media.coverImage.large}" width="100%" height="200px" style="object-fit: cover;"> <br>
+        <div class="padding">
+            <p> <a href="https://anilist.co/user/${selectedReview.user.name}"> <img src="${selectedReview.user.avatar.medium}" style="width: 100px"> ${selectedReview.user.name}</a> </p>
+            <center> <h3> Score: ${selectedReview.score}</h3> </center>
+            <center> <button id="deyap">De-yapper</button> </center> <br>
+            <center><h2>${selectedReview.summary} </h2> </center>
+            <hr style="border-top: 3px dashed #bbb;">
+            <div id="reviewContent" class="review"><center><h3> Review: </h3> <center> ${marked.parse(selectedReview.body)}</div>
+        </div>
         `;
        
         document.getElementById("deyap").addEventListener("click", async function() {

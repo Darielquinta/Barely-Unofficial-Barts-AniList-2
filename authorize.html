@@ -14,8 +14,8 @@
         }
 		
 		.padding {
-			padding-left: 10%;
-			padding-right: 10%;
+			padding-left: 25%;
+			padding-right: 25%;
 		}
 		
 		table {
@@ -24,11 +24,6 @@
             padding: 0;
             width: 100%;
 		}
-
-        #content {
-            padding-left: 25%;
-			padding-right: 25%;
-        }
 
         body {
             margin: 0;
@@ -51,7 +46,6 @@
     <div id="banner"></div>
     <div id="content">
         <center> <h1> Loading, please wait... </h1> </center>
-    
     </div>
 <script>
 var openAIKey = localStorage.getItem("openAIKey");;
@@ -63,7 +57,20 @@ if(openAIKey === null || openAIKey === "" || openAIKey === undefined) {
 let finalAnswer = "No answer";
 
 var query = `
-query ($page: Int, $perPage: Int, $userName: String) {
+query ($userName: String, $chunk: Int, $perChunk: Int) {
+    MediaListCollection(userName: $userName, type: ANIME, chunk: $chunk, perChunk: $perChunk) {
+        lists {
+            entries {
+                media {
+                    title {
+                        english
+                        native
+                    }
+                }
+            }
+        }
+    }
+
     Viewer {
         name
         about
@@ -75,9 +82,9 @@ query ($page: Int, $perPage: Int, $userName: String) {
         favourites {
             anime {
                 nodes {
-                coverImage {
-                    medium
-                }
+                    coverImage {
+                        medium
+                    }
                     id
                     title {
                         english
@@ -85,55 +92,17 @@ query ($page: Int, $perPage: Int, $userName: String) {
                 }
             }
         }
-        statistics {
-            anime {
-                scores(limit: 5 sort: [COUNT]) {
-                    score
-                }
-                statuses(limit: 5 sort:[COUNT]) {
-                    status
-                }
-
-
-            }
-        }
     }
 
-    Page (page: $page, perPage: $perPage) {
-        pageInfo {
-            total
-            perPage
-            hasNextPage
-        }
-        mediaList(type: ANIME, userName: $userName, sort: FINISHED_ON_DESC, status_in: COMPLETED) {
-            media {
-                id
-                coverImage {
-                    medium
-                    large
-                }
-                title {
-                    english
-                    romaji
-                }
-            }
-            status
-            score(format: POINT_100)
-            notes
-            completedAt {
-                year    
-            }
-        }
-    }
 }
 `;
 
-// mediaList  completedAt_greater: 20200500
-    var variables = {
-        userName: "Darielquinta",
-        page: 1,
-        perPage: 50
-    };
+
+var variables = {
+    userName: "Darielquinta",
+    chunk: 1,
+    perChunk: 10
+};
 
 function getAccessToken() {
     var hash = window.location.hash.substring(1);
@@ -143,7 +112,6 @@ function getAccessToken() {
 
 var accessToken = getAccessToken();
 localStorage.setItem("accessToken", accessToken);
-// console.log(localStorage.getItem("accessToken"));
 
 async function getAnimeId(animeName) {
     var query = `
@@ -194,6 +162,7 @@ async function getAnimeId(animeName) {
 
 };
 
+
 async function extractText(openAIDescription) {
     var lines = openAIDescription.split('\n');
     var extractedTitles = lines
@@ -225,63 +194,36 @@ async function extractText(openAIDescription) {
     }
 }
 
-
 async function fetchData() {
-    var allMediaList = [];
-    var hasNextPage = true;
-    var currentPage = 1;
-    var viewerData = null;
+    var options = {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: variables
+        })
+    };
 
-    while(hasNextPage) {
-        variables.page = currentPage;
+    try {
+        const response = await fetch('https://graphql.anilist.co', options);
+        const json = await handleResponse(response);
+        
+        const viewerData = json.data.Viewer;
+        
+        const favorites = viewerData.favourites.anime.nodes.map(anime => `<img src="${anime.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${anime.id}">${anime.title.english}</a>`).join('<br> <br> <hr style="border-top: 3px dashed #bbb;"> <br>');
+        var favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `${anime.title.english}`).join(' ');
 
-        var options = {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                query: query,
-                variables: variables
-            })
-        };
-
-        try {
-            const response = await fetch('https://graphql.anilist.co', options);
-            const json = await handleResponse(response);
-            
-            allMediaList = allMediaList.concat(json.data.Page.mediaList);
-            hasNextPage = json.data.Page.pageInfo.hasNextPage;
-            currentPage++;
-
-            if(!viewerData) {
-                viewerData = json.data.Viewer;
-            }
-        } catch (error) {
-            handleError(error);
-            break;
-        }
-    }   
-
-    
-
-    const favorites = viewerData.favourites.anime.nodes.map(anime => `<img src="${anime.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${anime.id}">${anime.title.english}</a>`).join('<br> <br> <hr style="border-top: 3px dashed #bbb;"> <br>');
-    var favoritesTitles = viewerData.favourites.anime.nodes.map(anime => `${anime.title.english}`).join(' ');
-
-
-
-    const openAIDescription = await openAIResponse(favorites);
-    const extractedTitles = await extractText(openAIDescription);
-    handleData({ 
-        data: { 
-            Page: { mediaList: allMediaList },
-            Viewer: viewerData
-        } 
-    }, openAIDescription, favorites, favoritesTitles, extractedTitles);
-
-}
+        const openAIDescription = await openAIResponse(favorites);
+        const extractedTitles = await extractText(openAIDescription);
+        handleData({ data: { Viewer: viewerData } }, openAIDescription, favorites, favoritesTitles, extractedTitles);
+    } catch (error) {
+        handleError(error);
+    }
+}   
 
 function handleResponse(response) {
     return response.json().then(function (json) {
@@ -323,23 +265,12 @@ async function openAIResponse(favorites) {
     }
 }
 
-
 function handleData(data, openAIDescription, favorites, favoritesTitles, extractedTitles) {
     console.log(data);
-    // console.log(data.data.Page.mediaList.map(item => `${item.media.title.romaji}`).join('<br> <br> <hr class="solid">'));
-
-    //console.log(data.data.Viewer.statistics.anime.statuses.status);
-    var animeList = data.data.Page.mediaList.map(item => `<img src="${item.media.coverImage.medium}" style="width: 50px"/> <a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr style="border-top: 3px dashed #bbb;"> <br>');
-        
-    var animeNames = localStorage.getItem("animeList");
-
-    if (animeNames === null || animeNames === "" || animeNames === undefined) {
-        animeNames = data.data.Page.mediaList.map(item => `<a href="https://buba2.co/result.html?id=${item.media.id}"> ${item.media.title.romaji} </a> <br> Score: <b> ${item.score} </b>`).join('<br> <br> <hr class="solid">');
-        localStorage.setItem("animeList", animeNames);
-    }
-
-    animeListTitles = data.data.Page.mediaList.map(item => `${item.media.title.romaji} Score: ${item.score}`).join(', ');
-    localStorage.setItem("animeListTitles", animeListTitles);
+    // document.write(data.data.MediaListCollection.lists
+                // .flatMap(list => list.entries)
+                // .map(entry => `${entry.media.title.english || entry.media.title.native}`)
+                // .join('<br>'));
 
     document.getElementById('header').innerHTML = `
         <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
@@ -350,7 +281,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
         </table>`;
 
     document.getElementById('banner').innerHTML = `
-                <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
+        <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
                 <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
@@ -359,30 +290,21 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
         <img src=${data.data.Viewer.bannerImage} width=100% style="">`;
     
     document.getElementById('content').innerHTML = `
-
+    <div class="padding">
         <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
         <center> <img src="${data.data.Viewer.avatar.large}" style="height: 50%;"> </center> <br>
         <center> <h2> About Me: </h2> </center> ${marked.parse(data.data.Viewer.about)} <br>
         <hr class="solid" style="border-top: 3px solid #bbb;">
-        <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br>`)}  <br> <br>
+        <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br> <br> <hr class="solid" style="border-top: 3px dashed #bbb;"> <br>`)}  <br> <br>
         <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
         <center> <h2> Favorites: </h2> </center> <br> ${favorites} <br> <br>
-        <hr class="solid" style="border-top: 3px solid #bbb;"> <br> 
-        <center> <h2> Completed Anime List (Under Construction): </h2> </center><br> ${animeList}
-
-        
-        <br> <br>`;
-    // console.log(animeList);
-    //console.log(getAccessToken());
-    //
-
+        <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
+        <center> <h2> Completed Anime List (Under Construction): </h2> </center><br>
+        <br> <br>
+    </div>`;
+    
     localStorage.setItem("favoritesTitles", favoritesTitles);
-    //console.log(localStorage.getItem("favoritesTitles"));
 }
-
-
-
-//<p>Recommendations: ${marked.parse(openAIDescription)}</p> <br>
 
 function handleError(error) {
     document.getElementById('header').innerHTML = `<div height=20%> <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
