@@ -4,7 +4,7 @@
 <head>
     <style>
         hr.solid {
-            border-top: 3px solid #bbb;
+            border-top: 3px solid #000000;
         }
 
 
@@ -37,9 +37,6 @@
             z-index: 1;
         }
 
-        .test {
-            background-color: blue;
-        }
 
         body {
             margin: 0;
@@ -68,6 +65,15 @@
             right: 0;
             bottom: 0;
             z-index: -1;
+        }
+
+        #ai-recommend {
+            background-color: #3c5ebc;
+            color: white;
+            border: none;
+            padding: 8px 32px;
+            border-radius: 10px;
+            font-size: large;
         }
 
     </style>
@@ -107,11 +113,16 @@ query ($id: Int) { # Define which variables will be used in the query (id)
       english
       native
     }
+    coverImage {
+        medium
+        large
+    }
     tags {
         name
     }
     reviews(limit: 5, sort: [SCORE], page: 1, perPage: 3) {
         nodes {
+            id
             summary
             score
             body
@@ -233,7 +244,7 @@ async function openAIResponse2(description, englishTitle, reviewSummary) {
                         content: "You are an assistant that receives the user's favorite anime. Then, you need to give a one sentence answer for if you recommend the anime to them or not. You will get the synopsis of the anime. Use another short sentence to describe why you say so. If the anime is already in their favorites, mention it playfully. Mention if it is different than what they're used to. Caution the user if the anime is a sequel unless the user has the first season in their favorites. Don't assume the user hasn't watched the first season, just caution. Use a final short sentence to factor in AniList review summaries. If it is null, do not mention reviews at all."
                     },
                     {
-                        role: "user", content: `Recommend (thumbs up or down emoji) based on this description: ${description}. This is the user's favorites: ${favoritesTitles}. Take into account these AniList review summaries: ${reviewSummary}. Here's the user's anime that they've completed and their scores: ${localStorage.getItem("animeListTitles")}. Note if they've already seen it.`
+                        role: "user", content: `Recommend (thumbs up or down emoji) based on this description: ${description}. This is the user's favorites: ${favoritesTitles}. Take into account these AniList review summaries: ${reviewSummary}. Here's the user's anime that they've completed and their scores: ${localStorage.getItem("animeListTitles")}. Note if they've already seen it. Refuse curtly if there is no description.`
                     }]
             })
         });
@@ -281,30 +292,37 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
             </tr>
         </table>
         <br>
-        <img src="${banner}" width="100%" height="200px" style="object-fit: cover; opacity:0.8;">
+        <img src="${banner || data.data.Media.coverImage.large}" width="100%" height="200px" style="object-fit: cover; opacity:0.8;">
         <br>
         <div class="padding">
             <div>
-                <center><b><p style="font-size:300%">${englishTitle}</b></center>
-                <div class="test" style="background-color: orange; padding: 5px 5px 15px 15px"><center><h3>Recommended?</h3></center>${sentenceRecommend}</div>
+                <center><b><p style="font-size:300%">${englishTitle || romajiTitle || nativeTitle}</b></center>
+                <hr style="border-top: 3px dotted #bbb;"> 
+                <center><h1>General Info</h1></center>
+                <div class="test" style="background-color: #A2DEFC; padding: 5px 5px 15px 15px"><center><h3>Recommended?</h3></center>${sentenceRecommend}</div> <br>
+                <hr style="border-top: 3px dashed #bbb;">
                 <h3>Titles</h3>
                 Romaji Title: ${romajiTitle}<br>
-                English Title: ${englishTitle}<br>
+                English Title: ${englishTitle || "None"}<br>
                 Native Title: ${nativeTitle}<br>
             </div>
-            <br>
-            <div>${description}</div>
+            <br> <hr style="border-top: 3px dashed #bbb;">
+            <h3>Description</h3>
+            <div>${description || "No description is available."}</div>
+            <br> <hr style="border-top: 3px dashed #bbb;">
             <h3>Tags</h3>
-            - ${tags}<br><br>
-            <center><h2>Reviews</h2></center>
+            - ${tags}<br>
+            <br><hr style="border-top: 3px solid #000000;">
+            <center><h1>Reviews</h1></center>
             ${data.data.Media.reviews.nodes.map(review => `
-                <p><img src="${review.user.avatar.medium}" style="width: 5%"><a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a></p>
+                <p><img src="${review.user.avatar.medium}" style="width: 50px"><a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a></p>
                 <p>Score: <b>${review.score}</b></p>
-                <p>Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name}>${review.summary}</a></p><br>
-            `).join('<br><hr class="solid"><br>')}
-            <center><h2>Recommendations</h2></center>
+                <p>Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name} review-id=${review.id}>${review.summary}</a></p><br>
+            `).join('<br><hr style="border-top: 3px dashed #bbb;"><br>') || "There are no reviews available."}
+            <hr style="border-top: 3px solid #000000;">
+            <center><h1>Recommendations</h1></center>
             <center> <div id="recommendations">
-            <button id="ai-recommend">Load Recommendations</button> <br>
+            <button id="ai-recommend">Load</button> <br>
             </div> </center> <br>
         </div>
     `;
@@ -320,6 +338,8 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
     document.querySelectorAll('.review').forEach(item => {
         item.addEventListener('click', event => {
             var animeId = event.target.closest('.review').getAttribute('data-id');
+            var reviewId = event.target.closest('.review').getAttribute('review-id');
+            localStorage.setItem("reviewId", reviewId);
             localStorage.setItem("reviewUser", event.target.closest('.review').getAttribute('user'));
             window.location.href = `review.html?id=${animeId}?user=${localStorage.getItem("reviewUser")}`;
         });

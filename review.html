@@ -29,6 +29,15 @@
     img {
         object-fit: contain;
     }
+
+    #deyap {
+            background-color: #3c5ebc;
+            color: white;
+            border: none;
+            padding: 8px 32px;
+            border-radius: 10px;
+            font-size: large;
+        }
     </style>
 </head>
 
@@ -63,6 +72,10 @@ query ($id: Int) {
       english
       native
     }
+    coverImage {
+        medium
+        large
+    }
     tags {
         name
     }
@@ -84,10 +97,21 @@ query ($id: Int) {
     bannerImage
   }
 }
+
+
+`;
+
+var mutation = `
+mutation($reviewId: Int) {
+    RateReview(reviewId: $reviewId, rating: NO_VOTE) {
+        
+    }
+}
 `;
 
 var variables = {
-    id: parseInt(animeId)
+    id: parseInt(animeId),
+    reviewId: localStorage.getItem("reviewId")
 };
 
 async function fetchData() {
@@ -165,16 +189,17 @@ function handleData(data, selectedReview) {
             </tr>
         </table>
         <br>
-        <img src="${data.data.Media.bannerImage}" width="100%" height="200px" style="object-fit: cover; opacity:0.8;"> <br>
+        <img src="${data.data.Media.bannerImage || data.data.Media.coverImage.large}" width="100%" height="200px" style="object-fit: cover; opacity:0.8;"> <br>
     `;
 
     if(selectedReview) {
         document.getElementById('content').innerHTML += `
-         <p> <a href="https://anilist.co/user/${selectedReview.user.name}"> <img src="${selectedReview.user.avatar.medium}" style="width: 15%"> ${selectedReview.user.name}</a> </p>
-        <p> Score: <b>${selectedReview.score}</b> </p> 
-        <button id="deyap">De-yappifier</button>
-        <p> Summary: ${selectedReview.summary} </p> <br>
-        <div id="reviewContent" class="review">Review: ${marked.parse(selectedReview.body)}</div>
+         <p> <a href="https://anilist.co/user/${selectedReview.user.name}"> <img src="${selectedReview.user.avatar.medium}" style="width: 100px"> ${selectedReview.user.name}</a> </p>
+        <center> <h3> Score: ${selectedReview.score}</h3> </center>
+        <center> <button id="deyap">De-yapper</button> </center> <br>
+        <center><h2>${selectedReview.summary} </h2> </center>
+        <hr style="border-top: 3px dashed #bbb;">
+        <div id="reviewContent" class="review"><center><h3> Review: </h3> <center> ${marked.parse(selectedReview.body)}</div>
         `;
        
         document.getElementById("deyap").addEventListener("click", async function() {
