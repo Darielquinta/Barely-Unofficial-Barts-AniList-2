@@ -267,16 +267,17 @@ async function openAIResponse(favorites) {
 
 function handleData(data, openAIDescription, favorites, favoritesTitles, extractedTitles) {
     console.log(data);
-    // document.write(data.data.MediaListCollection.lists
-                // .flatMap(list => list.entries)
-                // .map(entry => `${entry.media.title.english || entry.media.title.native}`)
-                // .join('<br>'));
+    var aboutText = data.data.Viewer.about;
+    var markdownAboutText = aboutText.replace("img520(", `<img width=100% src=`);
+    markdownAboutText = markdownAboutText.replace(")", " />");
 
     document.getElementById('header').innerHTML = `
         <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+                <td style="width: 80%; padding: 20px;"> <center><h1 style="margin: 0;"> BuBa 2 </h1></center>
+                <td style="padding: 0;"> <a href="https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token" class="padding"> <img src="https://static-00.iconduck.com/assets.00/profile-circle-icon-512x512-dt9lf8um.png" style="width:40px"> </a>
+
             </tr>
         </table>`;
 
@@ -284,7 +285,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
         <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> BuBa 2 </h1></center>
             </tr>
         </table>
         <img src=${data.data.Viewer.bannerImage} width=100% style="">`;
@@ -293,7 +294,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
     <div class="padding">
         <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
         <center> <img src="${data.data.Viewer.avatar.large}" style="height: 50%;"> </center> <br>
-        <center> <h2> About Me: </h2> </center> ${marked.parse(data.data.Viewer.about)} <br>
+        <center> <h2> About Me: </h2> </center> ${markdownAboutText} <br>
         <hr class="solid" style="border-top: 3px solid #bbb;">
         <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br> <br> <hr class="solid" style="border-top: 3px dashed #bbb;"> <br>`)}  <br> <br>
         <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
@@ -307,12 +308,14 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
 }
 
 function handleError(error) {
-    document.getElementById('header').innerHTML = `<div height=20%> <table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
+    document.getElementById('header').innerHTML = `<div height=20%><table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
+                <td style="width: 80%; padding: 20px;"> <center><h1 style="margin: 0;"> BuBa 2 </h1></center>
+                <td style="padding: 0;"> <a href="authorize.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/profile-circle-icon-512x512-dt9lf8um.png" style="width:40px"> </a>
+
             </tr>
-        </table> </div>`;
+        </table>  </div>`;
 
     document.getElementById('content').innerHTML = `<div 
         style="
@@ -329,11 +332,6 @@ function handleError(error) {
         padding-left: 5%;
 		padding-right: 5%;
         "> 
-        <div height=20%> <table class="padding" style="width: 100% object-fit: fill">
-            <tr>
-                <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> <br> <br> </h1></center>
-            </tr>
-        </table> </div>
 
         <br> <center> <h1> Important! <br> You are not authenticated with AniList. <br> <br> Please authenticate here: </h1>
         <a href="https://anilist.co/api/v2/oauth/authorize?client_id=19817&response_type=token">
