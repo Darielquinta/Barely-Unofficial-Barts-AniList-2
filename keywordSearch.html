@@ -35,16 +35,7 @@
             background-color: #3CBC8D;
             color: white;
             border: none;
-            padding: 16px 100px;
-            border-radius: 10px;
-            font-size: large;
-        }
-
-        input[type=submit] {
-            background-color: #3c40bc;
-            color: white;
-            border: none;
-            padding: 16px 32px;
+            padding: 16px 80px;
             border-radius: 10px;
             font-size: large;
         }
@@ -83,10 +74,11 @@
             z-index: -1;
         }
 
-        #content {
+        #content, #required {
             padding-left: 25%;
 			padding-right: 25%;
         }
+
 
         #header {
             position: fixed;
@@ -117,24 +109,39 @@
         </tr>
     </table>
 
-    <div id="content">
 
-        <center> 
-            <h1> Tags: </h1> 
-            <h2> (Type in any tags here, then click submit) </h2><br>
+
+        <center id="required"> 
+            <h1> Keyword Search </h1> <br>
+            <h2> Type in any tags and then hit Enter or click "Add." </h2><br>
             <form id="form"> 
                 <input type="text" id="keyword"/> <br>
-                <input type="submit" onclick="addKeyword()" value="Search" id="submitKeyword" />
+                <br><input type="button" onclick="addKeyword()" value="Add" id="submitKeyword" />
                 <br>
                 <br>
-                <br>
-                <input type="button" onclick="submitTags()" value="Submit" />
+                <div id="tags"><h3> Tags: </h3></div> <br>
+                <hr style="border-top: 3px dashed #bbb;">
+                <h2>  When you're done, click "Search." </h2>
+                <input type="button" onclick="submitTags()" value="Search" style="background-color: blue" />
+                
             </form>
         </center>
+    <div id="content">
     </div>
 
 
 <script>
+
+var form = document.getElementById("form");
+function handleForm(event) { event.preventDefault(); } 
+form.addEventListener('submit', handleForm);
+
+    var input = document.getElementById("keyword");
+    input.addEventListener("keypress", function(event) {
+        if(event.key === "Enter") {
+            addKeyword();
+        }
+    });
 
 var keywords = [];
 var id;
@@ -149,7 +156,7 @@ function addKeyword() {
     if (input !== "") {
         keywords.push(input);
         console.log(keywords);
-        document.getElementById('content').innerHTML += `<h3> - ${input} </h3>`;
+        document.getElementById('tags').innerHTML += `<h3> - ${input} </h3>`;
     }
 
 
@@ -273,6 +280,7 @@ async function handleData() {
     var animeName = document.createElement('div');
     animeName.className = 'banner';
     animeName.textContent =  anime;
+    document.getElementById('content').innerHTML = "";
     document.getElementById('content').innerHTML += `<br> <hr class="solid"> <center> <h2><a href="javascript:void(0);" class="anime-title" data-id=${animeID}> ${animeName.textContent} </a> </h2> `;
     document.getElementById('content').innerHTML += `<img src="${bannerImage}" width="100%" height="200px" style="object-fit: cover"> <br>`;
     document.getElementById('content').innerHTML += `${description} <br> <br> <hr class="solid">  <br> `;
