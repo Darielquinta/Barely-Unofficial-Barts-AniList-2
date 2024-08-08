@@ -18,7 +18,7 @@
             padding: 0;
             width: 100%;
 		}
-        
+
         body {
             margin: 0;
             padding: 0;
@@ -293,15 +293,14 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
                 <td style="width: 100%; padding: 20px;"> <center><h1 style="margin: 0;"> Barely Unofficial Bart's AniList 2 </h1></center>
             </tr>
         </table>
-        <br>
         <img src="${banner || data.data.Media.coverImage.large}" width="100%" height="200px" style="object-fit: cover;">
         <br>
-        <div class="padding">
+        <div class="padding" style="word-wrap:break-word;">
             <div>
                 <center><b><p style="font-size:300%">${englishTitle || romajiTitle || nativeTitle}</b></center>
                 <hr style="border-top: 3px dotted #bbb;"> 
                 <center><h1>General Info</h1></center>
-                <div class="test" style="background-color: #A2DEFC; padding: 5px 5px 15px 15px"><center><h3>Recommended?</h3></center>${sentenceRecommend}</div> <br>
+                <div class="test" style="background-color: #A2DEFC; padding: 15px 15px 15px 20px"><center><h3>Recommended?</h3></center>${sentenceRecommend}</div> <br>
                 <hr style="border-top: 3px dashed #bbb;">
                 <h3>Titles</h3>
                 Romaji Title: ${romajiTitle}<br>
@@ -313,15 +312,15 @@ async function handleData(data, openAIRecommender, tags, description, englishTit
             <div>${description || "No description is available."}</div>
             <br> <hr style="border-top: 3px dashed #bbb;">
             <h3>Tags</h3>
-            - ${tags}<br>
+            - ${tags || "None"}<br>
             <br><hr style="border-top: 3px solid #000000;">
             <center><h1>Reviews</h1></center>
             ${data.data.Media.reviews.nodes.map(review => `
                 <p><img src="${review.user.avatar.medium}" style="width: 50px"><a href="https://anilist.co/user/${review.user.name}">${review.user.name}</a></p>
                 <p>Score: <b>${review.score}</b></p>
                 <p>Summary: <a href="javascript:void(0);" class="review" data-id=${data.data.Media.id} user=${review.user.name} review-id=${review.id}>${review.summary}</a></p><br>
-            `).join('<br><hr style="border-top: 3px dashed #bbb;"><br>') || "There are no reviews available."}
-            <hr style="border-top: 3px solid #000000;">
+            `).join('<br><hr style="border-top: 3px dashed #bbb;"><br>') || "There are no reviews available."} <br>
+            <br> <hr style="border-top: 3px solid #000000;">
             <center><h1>Recommendations</h1></center>
             <center> <div id="recommendations">
             <button id="ai-recommend">Load</button> <br>
