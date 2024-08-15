@@ -252,6 +252,56 @@ async function openAIResponse(favorites) {
     }
 }
 
+async function showList() {
+    var query = `
+    query ($search: String) {
+        MediaListCollection(userName: $userName, type: ANIME, chunk: $chunk, perChunk: $perChunk) {
+            lists {
+                entries {
+                    media {
+                        title {
+                            english
+                            native
+                        }
+                    }
+                }
+            }
+        }
+    }
+    `;
+
+    var variables = {
+        userName: "Darielquinta",
+        chunk: 1,
+        perChunk: 10
+    };
+
+    var options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            query: query,
+            variables: variables
+        })
+    };
+
+    console.log(list);
+    const response = await fetch('https://graphql.anilist.co', options);
+    const data = await response.json();
+
+
+    var list = data.data.MediaListCollection.lists
+                .flatMap(list => list.entries)
+                .map(entry => `${entry.media.title.english || entry.media.title.native}`)
+                .join('<br>');
+    return {
+        list: list
+    };
+}
+
 function handleData(data, openAIDescription, favorites, favoritesTitles, extractedTitles) {
     console.log(data);
     var aboutText = data.data.Viewer.about;
@@ -280,6 +330,7 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
     document.getElementById('content').innerHTML = `
     <div class="padding" style="word-wrap:break-word;">
         <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
+        <center> <input type=button value="Access My List" id="showList">  </input> <center>
         <center> <h2> About Me: </h2> </center> <p> ${aboutText} </p> <br>
         <hr class="solid" style="border-top: 3px solid #bbb;">
         <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br> <br> <hr class="solid" style="border-top: 3px dashed #bbb;"> <br>`)}  <br> <br>
@@ -291,6 +342,11 @@ function handleData(data, openAIDescription, favorites, favoritesTitles, extract
     </div>`;
     
     localStorage.setItem("favoritesTitles", favoritesTitles);
+
+    document.getElementById("showList").addEventListener("click", async function() {
+        this.disabled = true;
+        const list = await showList();
+    });
 }
 
 // || \\
