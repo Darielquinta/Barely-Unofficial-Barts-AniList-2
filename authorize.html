@@ -305,7 +305,7 @@ async function showList() {
 
     var list = data.data.MediaListCollection.lists
                 .flatMap(list => list.entries)
-                .map(entry => `<img src="${entry.media.coverImage.medium}" style="width: 50px"/> <a href="https://anilist.co/anime/${entry.media.id}"> ${entry.media.title.english || entry.media.title.romaji || entry.media.title.native} </a>`)
+                .map(entry => `<img src="${entry.media.coverImage.medium}" style="width: 50px"/> <a href="result.html?id=${entry.media.id}"> ${entry.media.title.english || entry.media.title.romaji || entry.media.title.native} </a>`)
                 .join('<br> <br> <hr class="solid" style="border-top: 3px dashed #bbb;"> <br>');
     return {
         list: list
@@ -343,24 +343,55 @@ async function handleData(data, openAIDescription, favorites, favoritesTitles, e
     
     document.getElementById('content').innerHTML = `
     <div class="padding" style="word-wrap:break-word;">
+        <div>
         <center> <h1> Authorized! Welcome back ${data.data.Viewer.name}! </h1> </center> <br>
-        <center> <input type=button value="Access My List" id="showList">  </input> <center>
+        </div>
+
+        <div>
+        <table border="3" style="table-layout: fixed"> 
+            <tr>
+                <td> <center> <input type=button value="Recommendations" id="recommend"> </input> </center> </td>
+                <td> <center> <input type=button value="Favorites" id="favorites">  </input> </center> </td>
+                <td> <center> <input type=button value="My List" id="showList">  </input> </center> </td>
+        </table>
+        </div>
+
+        <div id="about-me">
         <center> <h2> About Me: </h2> </center> <p> ${aboutText} </p> <br>
         <hr class="solid" style="border-top: 3px solid #bbb;">
+        </div>
+
+        <div id="recommendationsList">
         <center> <h2> Recommendations: </h2> </center> <br> ${extractedTitles.join(`<br> <br> <hr class="solid" style="border-top: 3px dashed #bbb;"> <br>`)}  <br> <br>
         <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
-        <center> <h2> Favorites: </h2> </center> <br> ${favorites} <br> <br> </center>
+
+        
+        <div id="favoritesList"></div>
+        <center> <h2> Favorites: </h2> </center> <br> ${favorites} <br> <br>
         <hr class="solid" style="border-top: 3px solid #bbb;"> <br>
-        <center> <h2> Completed Anime List (Under Construction): <br> </h2> ${animeList} </center><br>
+
+        
+        <div id="animeList"></div>
+        <center> <h2> Completed Anime List (Under Construction): </center><br> </h2> ${animeList} <br>
+
 
         <br> <br>
     </div>`;
     
     localStorage.setItem("favoritesTitles", favoritesTitles);
 
+
+
+    document.getElementById("recommend").addEventListener("click", async function() {
+        document.getElementById("recommendationsList").scrollIntoView();
+    });
+
+    document.getElementById("favorites").addEventListener("click", async function() {
+        document.getElementById("favoritesList").scrollIntoView();
+    });
+
     document.getElementById("showList").addEventListener("click", async function() {
-        this.disabled = true;
-        const list = await showList();
+        document.getElementById("animeList").scrollIntoView();
     });
 }
 
@@ -370,7 +401,7 @@ function handleError(error) {
     document.getElementById('header').innerHTML = `<div height=20%><table class="padding" bgcolor="C0C0C0" style="width: 100% object-fit: fill">
             <tr>
                 <td style="padding: 0;"> <a href="index.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/search-icon-2048x2048-cmujl7en.png" style="width:40px"> </a>
-                <td style="width: 80%; padding: 20px;> <center><h1 style="margin: 0;"> BuBa 2 </h1></center>
+                <td style="width: 100%; padding: 20px;> <center><h1 style="margin: 0;"> BuBa 2 </h1></center>
                 <td style="padding: 0;"> <a href="authorize.html" class="padding"> <img src="https://static-00.iconduck.com/assets.00/profile-circle-icon-512x512-dt9lf8um.png" style="width:40px"> </a>
 
             </tr>
