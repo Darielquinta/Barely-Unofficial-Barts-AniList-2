@@ -7,3 +7,8 @@
 
  AniList but good
 
+
+## API Configuration
+
+The site now supports using the [MyAnimeList API](https://api.myanimelist.net/v2) as an alternative to AniList.
+To switch APIs, edit `config.js` and set `USE_MAL_API` to `true` and provide your `MAL_CLIENT_ID`.
