@@ -1,5 +1,6 @@
 export default function handler(req, res) {
   const allowedOrigins = [
+    'https://www.buba2.co',
     'https://buba2.co',
     'https://barely-unofficial-barts-ani-list-2.vercel.app'
   ];
