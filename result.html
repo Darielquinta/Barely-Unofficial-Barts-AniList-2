@@ -196,9 +196,10 @@ async function geminiResponse(tags, description) {
 
 
 async function geminiResponse2(description, englishTitle, reviewSummary) {
-    var favoritesTitles = localStorage.getItem('favoritesTitles');
+    var favoritesTitles = localStorage.getItem("favoritesTitles");
     console.log(favoritesTitles);
     console.log(englishTitle);
+
     try {
         const res = await fetch('https://barely-unofficial-barts-ani-list-2.vercel.app', {
             method: 'POST',
@@ -211,6 +212,7 @@ async function geminiResponse2(description, englishTitle, reviewSummary) {
         const data = await res.json();
         return data.candidates[0].content.parts[0].text;
     } catch (error) {
+
         console.error('Error:', error);
         return 'An error occurred while fetching the response.';
     }

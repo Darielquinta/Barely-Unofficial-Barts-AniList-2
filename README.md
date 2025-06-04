@@ -7,4 +7,5 @@
 
 AniList but good
 
-This fork now uses Google's Gemini API for generating recommendations via a Vercel backend.
+This version uses a Vercel backend with Google's Gemini 2.0 Flash model for generating recommendations.
+
