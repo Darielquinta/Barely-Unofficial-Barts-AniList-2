@@ -79,10 +79,17 @@
 
 <script>
 
-var openAIKey = localStorage.getItem("openAIKey");
-if(openAIKey === null || openAIKey === "" || openAIKey === undefined) {
-    openAIKey = prompt("Provide your OpenAI key here: ");
-    localStorage.setItem("openAIKey", openAIKey);
+async function getGeminiKey() {
+    if (window.geminiKey) return window.geminiKey;
+    try {
+        const res = await fetch('/api/geminiKey');
+        const data = await res.json();
+        window.geminiKey = data.key;
+        return window.geminiKey;
+    } catch (e) {
+        console.error('Failed to load Gemini key', e);
+        return null;
+    }
 }
 
 function getQueryParam(param) {
@@ -177,32 +184,25 @@ function handleResponse(response) {
     });
 }
 
-async function openAIResponse(reviewText) {
-    var API_KEY = localStorage.getItem("openAIKey");
+async function geminiResponse(reviewText) {
+    var API_KEY = await getGeminiKey();
 
     try {
-        var response = await fetch('https://api.openai.com/v1/chat/completions', {
+        var response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [
-                    {
-                        role: "system",
-                        content: "You are an assistant that summarizes a review in a few sentences. Write it in their voice. Make sure it is one paragraph long."
-                    },
-                    {
-                        role: "user", content: `Summarize this review: ${reviewText}`
-                    }]
+                contents: [
+                    {role: "user", parts: [{text: `You are an assistant that summarizes a review in a few sentences. Write it in their voice. Make sure it is one paragraph long.\nSummarize this review: ${reviewText}`}]}
+                ]
             })
         });
 
         var data = await response.json();
-        console.log(data.choices[0].message.content);
-        return data.choices[0].message.content;
+        console.log(data.candidates[0].content.parts[0].text);
+        return data.candidates[0].content.parts[0].text;
     } catch (error) {
         console.error('Error:', error);
         return "An error occurred while fetching the response.";
@@ -241,7 +241,7 @@ function handleData(data, selectedReview) {
         document.getElementById("deyap").addEventListener("click", async function() {
             this.disabled = true;
             this.textContent = "De-yapping...";
-            const deyappedReview = await openAIResponse(selectedReview.body);
+            const deyappedReview = await geminiResponse(selectedReview.body);
             document.getElementById("reviewContent").innerHTML = `De-yapped Review: ${deyappedReview}`;
             this.textContent = "De-yapped!";
         });
