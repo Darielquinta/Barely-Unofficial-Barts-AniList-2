@@ -79,12 +79,6 @@
 
 <script>
 
-var openAIKey = localStorage.getItem("openAIKey");
-if(openAIKey === null || openAIKey === "" || openAIKey === undefined) {
-    openAIKey = prompt("Provide your OpenAI key here: ");
-    localStorage.setItem("openAIKey", openAIKey);
-}
-
 function getQueryParam(param) {
    var urlParams = new URLSearchParams(location.search);
    return urlParams.get(param);
@@ -177,35 +171,21 @@ function handleResponse(response) {
     });
 }
 
-async function openAIResponse(reviewText) {
-    var API_KEY = localStorage.getItem("openAIKey");
-
+async function geminiResponse(reviewText) {
     try {
-        var response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const res = await fetch('https://barely-unofficial-barts-ani-list-2.vercel.app', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [
-                    {
-                        role: "system",
-                        content: "You are an assistant that summarizes a review in a few sentences. Write it in their voice. Make sure it is one paragraph long."
-                    },
-                    {
-                        role: "user", content: `Summarize this review: ${reviewText}`
-                    }]
+                contents: [{ parts: [{ text: `You are an assistant that summarizes a review in a few sentences. Write it in their voice. Make sure it is one paragraph long. Summarize this review: ${reviewText}` }] }]
             })
         });
-
-        var data = await response.json();
-        console.log(data.choices[0].message.content);
-        return data.choices[0].message.content;
+        const data = await res.json();
+        console.log(data.candidates[0].content.parts[0].text);
+        return data.candidates[0].content.parts[0].text;
     } catch (error) {
         console.error('Error:', error);
-        return "An error occurred while fetching the response.";
+        return 'An error occurred while fetching the response.';
     }
 }
 
@@ -241,7 +221,7 @@ function handleData(data, selectedReview) {
         document.getElementById("deyap").addEventListener("click", async function() {
             this.disabled = true;
             this.textContent = "De-yapping...";
-            const deyappedReview = await openAIResponse(selectedReview.body);
+            const deyappedReview = await geminiResponse(selectedReview.body);
             document.getElementById("reviewContent").innerHTML = `De-yapped Review: ${deyappedReview}`;
             this.textContent = "De-yapped!";
         });
