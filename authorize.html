@@ -53,8 +53,11 @@
 <script>
 async function getGeminiKey() {
     if (window.geminiKey) return window.geminiKey;
+    const apiHost = (location.hostname === 'buba2.co' || location.hostname === 'www.buba2.co')
+        ? 'https://barely-unofficial-barts-ani-list-2.vercel.app'
+        : '';
     try {
-        const res = await fetch('/api/geminiKey');
+        const res = await fetch(`${apiHost}/api/geminiKey`);
         const data = await res.json();
         window.geminiKey = data.key;
         return window.geminiKey;
