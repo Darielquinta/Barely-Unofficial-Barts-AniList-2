@@ -202,15 +202,10 @@ async function getAnimeId(animeName) {
 
     try {
         const data = await graphQL(query, variables);
-        if (data && data.data && data.data.Media) {
-            id = data.data.Media.id;
-            bannerImage = data.data.Media.bannerImage;
-            description = data.data.Media.description;
-            return data.data.Media.id;
-        } else {
-            console.error('Anime not found:', animeName);
-            return null;
-        }
+        id = data.data.Media.id;
+        bannerImage = data.data.Media.bannerImage;
+        description = data.data.Media.description;
+        return data.data.Media.id;
     } catch (error) {
         handleError(error);
     }
@@ -282,10 +277,6 @@ async function handleData() {
     console.log(`Current keywords: ${keywords.join(', ')}`)
     const anime = await openAIResponse(keywords.join(", "));
     var animeID = await getAnimeId(anime);
-    if (!animeID) {
-        document.getElementById('content').innerHTML = `<p>No results found for "${anime}".</p>`;
-        return;
-    }
     var animeName = document.createElement('div');
     animeName.className = 'banner';
     animeName.textContent =  anime;
