@@ -2,7 +2,9 @@
 body, script {
   background-color: #C0C0C0;
   background-image: url('backgrounds/adv_bg_1.jpg');
-  background-repeat: repeat;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   color: black;
   font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
 }
