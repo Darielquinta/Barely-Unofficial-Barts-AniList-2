@@ -1,8 +1,14 @@
 export default function handler(req, res) {
-  // Allow requests from the production GitHub Pages domain
-  res.setHeader("Access-Control-Allow-Origin", "https://buba2.co");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  const allowedOrigins = [
+    'https://buba2.co',
+    'https://barely-unofficial-barts-ani-list-2.vercel.app'
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
