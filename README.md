@@ -11,4 +11,4 @@
 ## API Configuration
 
 The site now supports using the [MyAnimeList API](https://api.myanimelist.net/v2) as an alternative to AniList.
-To switch APIs, edit `config.js` and set `USE_MAL_API` to `true` and provide your `MAL_CLIENT_ID`.
+To switch APIs, set `USE_MAL_API` to `true` in `config.js`.  Provide your MyAnimeList client ID in the `MAL_CLIENT_ID` environment variable on Vercel.

@@ -12,11 +12,13 @@
 <script>
 var searchQuery = localStorage.getItem("searchQuery");
 if (window.USE_MAL_API) {
-    var url = `https://api.myanimelist.net/v2/anime?q=${encodeURIComponent(searchQuery)}&limit=3&fields=id,title,main_picture`;
-    var options = {
-        headers: { 'X-MAL-CLIENT-ID': window.MAL_CLIENT_ID }
-    };
-    fetch(url, options)
+    fetch('/api/malClientId')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var url = `https://api.myanimelist.net/v2/anime?q=${encodeURIComponent(searchQuery)}&limit=3&fields=id,title,main_picture`;
+            var options = { headers: { 'X-MAL-CLIENT-ID': data.id } };
+            return fetch(url, options);
+        })
         .then(function(res) { return res.json(); })
         .then(handleMalData)
         .catch(handleError);
